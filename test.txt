@@ -1,4 +1,6 @@
 
+import "test.txt"
+
 var hello-world = "Hello, world!"
 
 asm print-char (c) = (

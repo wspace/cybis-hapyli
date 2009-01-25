@@ -1,12 +1,12 @@
-module FileLoader (loadModule, loadAssembly) where
+module FileLoader (loadProgram, loadAssembly) where
 
 import Ast
 import Parser
 
-loadModule :: FilePath -> IO Module
-loadModule file = do
+loadProgram :: FilePath -> IO Program
+loadProgram file = do
     modules <- loadModules [] [file] []
-    return $ combine modules
+    return $ fromModules modules
 
 loadAssembly :: FilePath -> IO [Instruction]
 loadAssembly file = do
@@ -22,14 +22,4 @@ loadModules filesImported (currentFile:filesToImport) modulesImported = do
     let notImportedYet = filter (\x -> not $ x `elem` currentFile:filesImported) imports
     let newImports = filter (\x -> not $ x `elem` filesToImport) notImportedYet
     loadModules (currentFile:filesImported) (newImports ++ filesToImport) (currentModule:modulesImported)
-            
-combine :: [Module] -> Module
-combine modules = recurse modules [] [] []
-            where recurse :: [Module] ->
-                             [Variable] ->
-                             [AssemblyMacro] ->
-                             [Function] ->
-                             Module
-                  recurse                   []  vs as fs = Module [] vs as fs
-                  recurse ((Module _ v a f):ms) vs as fs = recurse ms (v++vs) (a++as) (f++fs)
 

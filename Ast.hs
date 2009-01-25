@@ -1,5 +1,7 @@
 module Ast where
 
+data Program = Program [Variable] [AssemblyMacro] [Function]
+
 data Module = Module [FilePath] [Variable] [AssemblyMacro] [Function]
 
 data Element = Import FilePath
@@ -45,7 +47,14 @@ data Instruction = Push Integer
                  | Rc
                  | Rn
 
-                 
+
+instance Show Program where
+    show (Program variables macros functions) = 
+        (unlines $ map show variables) ++ "\n" ++
+        (unlines $ map show macros) ++ "\n" ++
+        (unlines $ map show functions)
+
+        
 instance Show Module where
     show (Module imports variables macros functions) = 
         (unlines $ map (("import " ++) . show) imports) ++ "\n" ++
@@ -137,5 +146,14 @@ fromElements elements = recurse elements [] [] [] []
                         recurse    ((Def f):es) is vs as fs = recurse es    is     vs     as  (f:fs)
 
 
+fromModules :: [Module] -> Program
+fromModules modules = recurse modules [] [] []
+                where recurse :: [Module] ->
+                                 [Variable] ->
+                                 [AssemblyMacro] ->
+                                 [Function] ->
+                                 Program
+                      recurse                   []  vs as fs = Program vs as fs
+                      recurse ((Module _ v a f):ms) vs as fs = recurse ms (v++vs) (a++as) (f++fs)
 
 

@@ -1,4 +1,16 @@
 
+I could support function overloading
+if I rename a function based on how many parameters it accepts,
+rename calls based on how many arguments are passed,
+then I just need to check that all function calls are defined.
+
+There certainly needs to be a preprocessor phase.
+
+Preprocessor.hs defines a new data element: Program [Variable] [AssemblyMacro] [Function]
+Module still should be split up, I guess. 
+
+==========================================
+
 writeExpression :: Expression -> Compiler [Instruction]     -- or should it be Compiler () ?
 writeExpression (If condition trueValue falseValue) = 
     genLabel >>= \elseLabel             ->
