@@ -71,9 +71,9 @@ verifyFunction (Function name params body) = do
 assertMainFunctionDefined :: Validator ()
 assertMainFunctionDefined = do
     state <- get
-    if "main" `elem` (functions state)
+    if "main~0" `elem` (functions state)
         then return ()
-        else insertError $ "Function 'main' not defined"
+        else insertError $ "Function 'main~0' not defined"
     
 setCurrentFunction :: String -> [String] -> Validator ()
 setCurrentFunction name params = do
