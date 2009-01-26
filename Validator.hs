@@ -6,10 +6,10 @@ import Data.List (intersperse, sort)
 
 
 getValidationErrors :: Program -> [String]
-getValidationErrors p = errors $ execState (verifyProgram p) emptyState
-                        
+getValidationErrors p = errors $ execState (verifyProgram p) (initialState p)
 
-                        
+
+
 data ValidatorState = ValidatorState { currentFunction :: String,
                                        functions :: [String],
                                        assemblyMacros :: [String],
@@ -19,34 +19,14 @@ data ValidatorState = ValidatorState { currentFunction :: String,
 
 type Validator a = State ValidatorState a
                                        
-                                       
-emptyState :: ValidatorState
-emptyState = ValidatorState { currentFunction = "",
-                              functions = [],
-                              assemblyMacros = [],
-                              variables = [],
-                              parameters = [],
-                              errors = [] }
-                                       
+initialState :: Program -> ValidatorState
+initialState p = ValidatorState { currentFunction = "",
+                                  functions = getFunctions p,
+                                  assemblyMacros = getAssemblyMacros p,
+                                  variables = getVariables p,
+                                  parameters = [],
+                                  errors = [] }
 
-verifyProgram :: Program -> Validator ()
-verifyProgram p@(Program _ _ funcs) = do
-    initializeState p
-    assertNoVariablesRedefined
-    assertNoCallablesRedefined
-    mapM_ verifyFunction funcs
-    assertMainFunctionDefined
-
-    
-    
-initializeState :: Program -> Validator ()
-initializeState p = put $ ValidatorState { currentFunction = "",
-                                           functions = getFunctions p,
-                                           assemblyMacros = getAssemblyMacros p,
-                                           variables = getVariables p,
-                                           parameters = [],
-                                           errors = [] }
-    
 getFunctions :: Program -> [String]
 getFunctions (Program _ _ funcs) = map getName funcs
     where getName (Function name _ _) = name
@@ -58,10 +38,15 @@ getAssemblyMacros (Program _ macros _) = map getName macros
 getVariables :: Program -> [String]
 getVariables (Program vars _ _) = map getName vars
     where getName (ArrayVariable name _) = name
-    
 
-    
-    
+
+
+verifyProgram :: Program -> Validator ()
+verifyProgram p@(Program _ _ funcs) = do
+    assertNoVariablesRedefined
+    assertNoCallablesRedefined
+    mapM_ verifyFunction funcs
+    assertMainFunctionDefined                        
     
 assertNoVariablesRedefined :: Validator ()
 assertNoVariablesRedefined = do
@@ -90,9 +75,6 @@ assertMainFunctionDefined = do
         then return ()
         else insertError $ "Function 'main' not defined"
     
-
-    
-    
 setCurrentFunction :: String -> [String] -> Validator ()
 setCurrentFunction name params = do
     state <- get
@@ -105,11 +87,8 @@ assertNoParametersRedefined = do
     let f = currentFunction state
     let ps = parameters state
     assertNoDuplicates ps $ "Duplicate parameter in definition of " ++ f ++ ": "
-        
-        
-        
-        
-        
+
+    
 verifyExpression :: Expression -> Validator ()
 
 verifyExpression (Literal i) = return ()
@@ -138,8 +117,6 @@ verifyExpression (If condition trueValue falseValue) = do
     verifyExpression falseValue
         
         
-        
-        
 assertNoDuplicates :: [String] -> String -> Validator ()
 assertNoDuplicates lst errMsg = do
     let duplicates = findDuplicates lst
@@ -153,7 +130,6 @@ findDuplicates xs = recurse (sort xs) []
                     recurse   (x:[]) ds = ds
                     recurse (x:y:xs) ds | x == y    = recurse xs (x:ds)
                                         | otherwise = recurse (y:xs) ds
-
                                         
         
 insertError :: String -> Validator ()
