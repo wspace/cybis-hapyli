@@ -100,7 +100,7 @@ verifyExpression (Symbol s) = do
     let symbols = vs ++ ps
     if s `elem` symbols
         then return ()
-        else insertError $ "Symbol not defined: " ++ s
+        else insertError $ "Undefined symbol: " ++ s
 
 verifyExpression (FunctionCall name args) = do
     state <- get
