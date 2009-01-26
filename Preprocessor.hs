@@ -11,14 +11,12 @@ preprocess (Program vars macros funcs) =
 
             
 toArrayVariable :: Variable -> Variable
-
+toArrayVariable (ArrayVariable name is) = ArrayVariable name is
 toArrayVariable (IntegerVariable name i) = ArrayVariable name [i]
-
 toArrayVariable (StringVariable name str) = 
     ArrayVariable name $ strToIntegers str
     where strToIntegers = foldr (\c is -> (toInteger $ ord c):is) [0]
 
-toArrayVariable (ArrayVariable name is) = ArrayVariable name is
 
 
 overloadFunction :: Function -> Function

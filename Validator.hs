@@ -42,7 +42,7 @@ getVariables (Program vars _ _) = map getName vars
 
 
 verifyProgram :: Program -> Validator ()
-verifyProgram p@(Program _ _ funcs) = do
+verifyProgram (Program _ _ funcs) = do
     assertNoVariablesRedefined
     assertNoCallablesRedefined
     mapM_ verifyFunction funcs
