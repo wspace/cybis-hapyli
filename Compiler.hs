@@ -104,8 +104,7 @@ compileHeapLookup symbol = do
     heapTable <- getHeapTable
     let heapAddress = fromJust (lookup symbol heapTable)
     write (Push heapAddress)
-    write (Load)
-    
+        
 getHeapTable :: Compiler [(String, Integer)]
 getHeapTable = do
     state <- get
