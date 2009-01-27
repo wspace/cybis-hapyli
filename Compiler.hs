@@ -77,7 +77,6 @@ compileExpression parameters stackOffset (CallEx name args) = do
     case lookup name macroTable of
         Just code -> mapM_ write code
         Nothing -> write (Call name)
-    write (Slide $ toInteger $ length args)
         
 compileExpression parameters stackOffset (If condition trueValue falseValue) = do
     elseLabel <- genLabel
