@@ -1,4 +1,4 @@
-module Preprocessor where
+module Preprocessor (preprocess) where
 import Ast
 import Data.Char (ord)
 
@@ -38,9 +38,9 @@ overloadExpression :: Expression -> Expression
 overloadExpression (Literal i) = Literal i
 overloadExpression (Symbol str) = Symbol str
 
-overloadExpression (FunctionCall name args) = 
-    FunctionCall (overloadName name args)
-                 (map overloadExpression args)
+overloadExpression (CallEx name args) = 
+    CallEx (overloadName name args)
+           (map overloadExpression args)
     
 overloadExpression (If condition trueValue falseValue) =
     If (overloadExpression condition)

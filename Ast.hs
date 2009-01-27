@@ -1,25 +1,37 @@
 module Ast where
 
-data Program = Program [Variable] [AssemblyMacro] [Function]
+data Program = Program { programVariables  :: [Variable], 
+                         programMacros     :: [AssemblyMacro],
+                         programFunctions  :: [Function] }
 
-data Module = Module [FilePath] [Variable] [AssemblyMacro] [Function]
+data Module = Module { moduleImports   :: [FilePath],
+                       moduleVariables :: [Variable],
+                       moduleMacros    :: [AssemblyMacro], 
+                       moduleFunctions :: [Function] }
 
 data Element = Import FilePath
              | Var Variable
              | Asm AssemblyMacro
              | Def Function
              
-data Variable = IntegerVariable String Integer
-              | ArrayVariable String [Integer]
-              | StringVariable String String
+data Variable = IntegerVariable { variableName :: String, 
+                                  integerValue :: Integer }
+              | ArrayVariable   { variableName :: String,
+                                  arrayValue :: [Integer] }
+              | StringVariable  { variableName :: String,
+                                  stringValue :: String }
              
-data AssemblyMacro = AssemblyMacro String [String] [Instruction]
+data AssemblyMacro = AssemblyMacro { macroName :: String,
+                                     macroParameters :: [String],
+                                     macroBody :: [Instruction] }
 
-data Function = Function String [String] Expression             
+data Function = Function { functionName :: String,
+                           functionParameters :: [String], 
+                           functionBody :: Expression }
              
 data Expression = Literal Integer
                 | Symbol String
-                | FunctionCall String [Expression]
+                | CallEx String [Expression]
                 | If Expression Expression Expression
                 
 data Instruction = Push Integer
@@ -98,7 +110,7 @@ instance Show Function where
 instance Show Expression where
     show (Literal value) = (show value)
     show (Symbol name) = name
-    show (FunctionCall name args) = "(" ++ name ++ " " ++ (unwords $ map show args) ++ ")"
+    show (CallEx name args) = "(" ++ name ++ " " ++ (unwords $ map show args) ++ ")"
     show (If condition trueValue falseValue) = "(if " ++ (show condition) ++ "\n"
                                                       ++ (show trueValue) ++ "\n"
                                                       ++ (show falseValue) ++ ")"

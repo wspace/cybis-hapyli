@@ -70,7 +70,7 @@ expression :: Parser Expression
 expression =   literalExpression
            <|> symbolExpression
            <|> ifExpression
-           <|> functionCall
+           <|> callExpression
            <?> "expression"
            
 literalExpression :: Parser Expression
@@ -93,11 +93,11 @@ ifExpression = do
     symbol ")"
     return $ If condition trueValue falseValue
            
-functionCall :: Parser Expression
-functionCall = parens $ do
+callExpression :: Parser Expression
+callExpression = parens $ do
     name <- identifier
     args <- many expression
-    return $ FunctionCall name args
+    return $ CallEx name args
     
 instruction :: Parser Instruction         
 instruction =   withOperand "push" number Push
