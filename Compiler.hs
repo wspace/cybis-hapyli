@@ -4,7 +4,7 @@ import Ast
 import Control.Monad
 import Control.Monad.State
 import Data.Maybe (fromJust)
-import Data.List (mapAccumR, elemIndex)
+import Data.List (mapAccumL, elemIndex)
 
 compile :: Program -> [Instruction]
 compile p = reverse $ code $ execState (compileProgram p) (initialState p)
@@ -27,7 +27,7 @@ buildMacroTable p = map makeEntry (programMacros p)
                   where makeEntry (AssemblyMacro name _ body) = (name, body)
                               
 buildHeapTable :: Program -> [(String, Integer)]
-buildHeapTable = snd . mapAccumR assignAddress 1 . programVariables
+buildHeapTable = snd . mapAccumL assignAddress 1 . programVariables
     where   assignAddress address (ArrayVariable name values) = 
                 (address + (toInteger $ length values), (name, address))
 
