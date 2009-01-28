@@ -59,6 +59,7 @@ compileFunction :: Function -> Compiler ()
 compileFunction (Function name params body) = do
     write (Label name)
     compileExpression params 0 body
+    write (Slide $ toInteger $ length params)
     write (Ret)
 
     
