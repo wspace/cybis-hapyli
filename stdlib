@@ -1,33 +1,37 @@
 
+;;; IO 
+;;; ========================================
 
-; IO 
-; ========================================
-
-asm print-num (n) = (dup pn)
+asm print-number (n) = (dup pn)
 asm print-char (c) = (dup pc)
 
 def print-string (*str) = (do (__print-string__ (+ *str 1) (ref *str))
                               *str)
 
-def __print-string__ (*rest chr) = (if (== chr 0) 0
+def __print-string__ (*rest chr) = (if (== chr 0) 
+                                       0
                                        (do (print-char chr)
                                            (__print-string__ (+ *rest 1) (ref *rest))))
 
-asm read-num (*n) = (dup rn)
-asm read-char (*c) = (dup rc)
+asm read-number (*n) = (dup rn load)
+asm read-char (*c) = (dup rc load)
 
-def read-string (*str maxChars) = (do (__read-string__ *str maxChars)
-                                     *str)
+var *__stdlib-io-buffer__ = (0)
+def read-number () = (read-number *__stdlib-io-buffer__)
+def read-char () = (read-char *__stdlib-io-buffer__)
 
-def __read-string__ (*str maxChars) = 
-    (if (== maxChars 0)
-        (set *str 0)
-        (do (read-char *str)
-            (if (== (ref *str) '\n')
-                (set *str 0)
-                (__read-string__ (+ *str 1) (- maxChars 1)))))
+def read-string (*buffer nchars) = (do (if (or (== (read-char *buffer) '\n')
+                                               (== nchars 0))
+                                           (set *buffer 0)
+                                           (read-string (+ *buffer 1) (- nchars 1)))
+                                       *buffer)
 
-                
+def read-string (nchars) = (read-string (alloc (+ nchars 1)) nchars)
+
+def read-string () = (alloc (__read-dynamic-string__ (ref 0)))
+def __read-dynamic-string__ (*unallocated) = (if (== (read-char *unallocated) '\n')
+                                                 (do (set *unallocated 0) 1)
+                                                 (+ 1 (__read-dynamic-string__ (+ *unallocated 1))))
 
 ; STRING MANAGEMENT 
 ; ========================================
@@ -70,7 +74,8 @@ def set (*obj index value) = (set (+ *obj index) value)
 def copy (*dest *src count) = (do (__copy__ *dest *src count)
                                   *dest)
                                   
-def __copy__(*dest *src count) = (if (== count 0) 0
+def __copy__(*dest *src count) = (if (== count 0) 
+                                     0
                                      (do (set *dest (ref *src))
                                          (__copy__ (+ *dest 1) (+ *src 1) (- count 1))))
 

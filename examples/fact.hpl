@@ -1,0 +1,16 @@
+import "stdlib"
+
+var *prompt = "Enter a number: "
+def main () = (do (print-string *prompt)
+                  (print-factorial (read-number)))
+
+var *tmp = "! = "                        
+def print-factorial (n) = (do (print-number n)
+                              (print-string *tmp)
+                              (print-number (factorial n))
+                              (print-char '\n'))
+
+def factorial (n) = (if (== n 1)
+                        1
+                        (* n (factorial (- n 1))))
+

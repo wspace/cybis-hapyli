@@ -1,0 +1,20 @@
+import "stdlib"
+
+var *instructions = "Enter some numbers, then -1 to finish\n"
+def main () = (do (print-string *instructions)
+                  (print-total (compute-sum)))
+                  
+var *result-message = "Total is "
+def print-total (total) = (do (print-string *result-message)
+                              (print-number total)
+                              (print-char '\n'))
+
+def compute-sum () = (__compute-sum__ (get-number))
+def __compute-sum__ (n) = (if (== n -1)
+                              0
+                              (+ n (__compute-sum__ (get-number))))
+                              
+var *prompt = "Number:"
+def get-number () = (do (print-string *prompt)
+                        (read-number))
+
