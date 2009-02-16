@@ -1,0 +1,11 @@
+import "stdlib"
+
+var *prompt = "Please enter your name: "
+def main () = (do (print-string *prompt)
+                  (print-welcome (read-string)))
+                  
+var *hello = "Hello "
+def print-welcome (name) = (do (print-string *hello)
+                               (print-string name)
+                               (print-char '\n'))
+

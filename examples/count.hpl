@@ -1,0 +1,10 @@
+import "stdlib"
+
+def main () = (count 10)
+
+def count (n) = (if (== n 0)
+                    0
+                    (do (count (- n 1))
+                        (print-number n)
+                        (print-char '\n')))
+

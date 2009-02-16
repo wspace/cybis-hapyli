@@ -1,0 +1,16 @@
+import "stdlib"
+
+var *prompt = "Enter a number: "
+def main () = (do (print-string *prompt)
+                  (move (read-number) 1 2 3))
+
+var *tmp = " -> "
+def move (n a b c) = 
+    (if (== n 1)
+        (do (print-number a)
+            (print-string *tmp)
+            (print-number c)
+            (print-char '\n'))
+        (do (move (- n 1) a c b)
+            (move 1 a b c)
+            (move (- n 1) b a c)))
