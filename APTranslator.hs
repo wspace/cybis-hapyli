@@ -1,4 +1,4 @@
-module APTranslator where
+module APTranslator (processProgram) where
 
 import qualified Ast as Ast
 import Ast (variableName, variableLength, callableName)
