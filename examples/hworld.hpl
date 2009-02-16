@@ -1,5 +1,0 @@
-import "stdlib"
-
-var hello-world = "Hello, world!"
-def main () = (print-string hello-world)
-

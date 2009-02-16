@@ -1,4 +1,4 @@
-module Parser (parseModule, parseAssembly) where
+module Parser (parseModule) where
 
 import Lexer
 import Ast
@@ -6,99 +6,153 @@ import Text.ParserCombinators.Parsec
 import Control.Monad (liftM)
 import Data.Char (ord)
 
-parseModule :: FilePath -> String -> Module
-parseModule location input = unwrap $ parse programModule location input
-                           
-parseAssembly :: FilePath -> String -> [Instruction]
-parseAssembly location input = unwrap $ parse (many instruction) location input
-                                 
-unwrap :: Either ParseError a -> a
-unwrap (Right result) = result
-unwrap (Left err) = error $ show err                                
-                                 
+parseModule :: String -> String -> Module
+parseModule file text = unwrap $ parse programModule file text
+                  where unwrap (Right result) = result
+                        unwrap (Left err) = error $ (show err)
+
 programModule :: Parser Module
 programModule = do
-    whiteSpace
-    elements <- many $ lexeme element
-    eof
-    return $ fromElements elements
+    elements <- many element
+    let m = fromElements elements
+    return m
 
 element :: Parser Element
-element = (moduleImport  >>= \i -> return $ Import i) <|>
-          (variable      >>= \v -> return $ Var v)   <|>
-          (assemblyMacro >>= \a -> return $ Asm a)   <|>
-          (function      >>= \f -> return $ Def f)   <?>
-          "import, var, asm, def"
-    
-moduleImport :: Parser FilePath
-moduleImport = do
-    symbol "import"
+element =   importElement 
+        <|> variableElement
+        <|> callableElement
+        <?> "element"
+        
+importElement :: Parser Element
+importElement = do
+    reserved "import"
     file <- stringLiteral
-    return file
+    return $ ImportElement file
+    
+variableElement :: Parser Element
+variableElement = do
+    v <- variable
+    return $ VariableElement v
+    
+callableElement :: Parser Element
+callableElement = do
+    c <- callable
+    return $ CallableElement c
 
 variable :: Parser Variable
-variable = do
-    symbol "var"
-    name <- identifier
-    symbol "="
-    ((number        >>= \n   -> return $ IntegerVariable name n)   <|>
-     (array         >>= \ns  -> return $ ArrayVariable name ns)    <|>
-     (stringLiteral >>= \str -> return $ StringVariable name str))
-        
-array :: Parser [Integer]
-array = parens $ many1 number    
+variable = 
+    do reserved "var"
+       name <- identifier
+       (uninitializedVariable name <|> 
+        initializedVariable name)
 
-function :: Parser Function
-function = do
-    symbol "def"
-    name <- identifier
-    params <- parens $ many identifier
+uninitializedVariable :: String -> Parser Variable
+uninitializedVariable name = squares $ do
+    length <- number
+    return $ UninitializedVariable name length    
+            
+initializedVariable :: String -> Parser Variable
+initializedVariable name = do
     symbol "="
-    body <- expression
-    return $ Function name params body
+    (integerVariable name <|>
+     arrayVariable name <|>
+     stringVariable name)
+          
+integerVariable :: String -> Parser Variable
+integerVariable name = do
+    n <- number
+    return $ IntegerVariable name n
+
+arrayVariable :: String -> Parser Variable
+arrayVariable name = do
+    ns <- many number
+    return $ ArrayVariable name ns
     
-assemblyMacro :: Parser AssemblyMacro
-assemblyMacro = do
-    symbol "asm"
+stringVariable :: String -> Parser Variable    
+stringVariable name = do
+    str <- stringLiteral
+    return $ StringVariable name str
+            
+callable :: Parser Callable
+callable =   function
+         <|> macro
+         <?> "function or macro"
+         
+function :: Parser Callable
+function = do
+    reserved "def"
     name <- identifier
-    params <- parens $ many identifier
+    params <- parens (many identifier)
     symbol "="
-    body <- parens $ many instruction
-    return $ AssemblyMacro name params body
+    bindings <- (letForm <|> return [])
+    body <- expression
+    return $ Function name params bindings body
+
+letForm :: Parser [Binding]
+letForm = do reserved "let"
+             bindings <- many binding
+             reserved "in"
+             return bindings
+  where binding = do
+          name <- identifier
+          symbol "="
+          value <- expression
+          return (name, value)
+    
+macro :: Parser Callable
+macro = do
+    reserved "asm"
+    name <- identifier
+    params <- parens (many identifier)
+    symbol "="
+    instructions <- parens (many instruction)
+    return $ Macro name params instructions
     
 expression :: Parser Expression
-expression =   literalExpression
-           <|> symbolExpression
-           <|> ifExpression
-           <|> callExpression
-           <?> "expression"
-           
-literalExpression :: Parser Expression
-literalExpression = do
-    n <- number
-    return $ Literal n
+expression =  integerLiteralEx
+          <|> stringLiteralEx
+          <|> symbolEx
+          <|> ifEx
+          <|> doEx
+          <|> callEx
+          <?> "expression"
+          
+integerLiteralEx :: Parser Expression
+integerLiteralEx = number >>= \n -> 
+                   return $ IntegerLiteral n
 
-symbolExpression :: Parser Expression
-symbolExpression = do
-    name <- identifier
-    return $ Symbol name
-        
-ifExpression :: Parser Expression    
-ifExpression = do
-    (try $ symbol "(" >> 
-           symbol "if")
+stringLiteralEx :: Parser Expression
+stringLiteralEx = stringLiteral >>= \str -> 
+                  return $ StringLiteral str
+          
+symbolEx :: Parser Expression
+symbolEx = identifier >>= \name -> 
+           return $ Symbol name
+           
+ifEx :: Parser Expression
+ifEx = do
+    (try $ symbol "(" >> reserved "if")
     condition <- expression
     trueValue <- expression
     falseValue <- expression
     symbol ")"
     return $ If condition trueValue falseValue
-           
-callExpression :: Parser Expression
-callExpression = parens $ do
+    
+doEx :: Parser Expression
+doEx = do
+    (try $ symbol "(" >> reserved "do")
+    expressions <- many1 expression
+    symbol ")"
+    return $ Do expressions
+          
+callEx :: Parser Expression
+callEx = do
+    symbol "("
     name <- identifier
     args <- many expression
+    symbol ")"
     return $ CallEx name args
-    
+
 instruction :: Parser Instruction         
 instruction =   withOperand "push" number Push
             <|> atomic "dup" Dup
@@ -136,6 +190,10 @@ withOperand name operand constructor = try $ do
     symbol name
     n <- operand
     return $ constructor n
-    
+
 number :: Parser Integer
 number = integer <|> (toInteger . ord) `liftM` charLiteral
+
+array :: Parser [Integer]
+array = parens $ many1 number 
+

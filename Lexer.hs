@@ -42,7 +42,7 @@ hapyliDef = P.LanguageDef { P.commentStart = "",
                             P.opStart = undefined,
                             P.opLetter = undefined,
                             P.reservedOpNames = [],
-                            P.reservedNames = [],
+                            P.reservedNames = ["import", "var", "def", "asm", "let", "in", "if", "do"],
                             P.caseSensitive = True }
                           
 lexer = P.makeTokenParser hapyliDef
