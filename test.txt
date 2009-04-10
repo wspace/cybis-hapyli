@@ -29,6 +29,6 @@ def main () =
 
 ;;; Test string replacements:
 
-var *hello1 = ('h', 'e', 'l', 'l', 'o', '\0')
+var *hello1 = ('h' 'e' 'l' 'l' 'o' '\0')
 
 var *hello2 = "Hello\tworld!\nThis is a test!"

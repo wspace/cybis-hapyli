@@ -4,8 +4,76 @@ from ast import *
 
 class HplAstParser(HplLexemeParser):
 
-    # variables, modules, program
+    def module(self):
+        
+        elements = self.many(self.element)
+        
+        if self.hasMoreTokens():
+            self.element()
+        
+        imports = filter(lambda e: isinstance(e, Import), elements)
+        variables = filter(lambda e: isinstance(e, Variable), elements)
+        routines = filter(lambda e: isinstance(e, Routine), elements)
+        
+        return Module(imports, variables, routines)
 
+    def element(self):
+        return self.either(
+            self.moduleImport,
+            self.variable,
+            self.routine)
+
+    def moduleImport(self):
+        self.reserved("import")
+        token = self.current()
+        file = self.string()
+        return Import(token, file)
+    
+    def variable(self):
+        return self.either(
+            self.integerVariable,
+            self.arrayVariable,
+            self.stringVariable,
+            self.uninitializedVariable)
+        
+    def integerVariable(self):
+        self.reserved("var")
+        token = self.current()
+        name = self.identifier()
+        self.lexeme(string='=')
+        value = self.number()
+        return IntegerVariable(token, name, value)
+
+    def arrayVariable(self):
+        self.reserved("var")
+        token = self.current()
+        name = self.identifier()
+        self.lexeme(string='=')
+        self.lexeme(string='(')
+        values = self.many1(self.number)
+        self.lexeme(string=')')
+        return ArrayVariable(token, name, values)
+
+    def stringVariable(self):
+        self.reserved("var")
+        token = self.current()
+        name = self.identifier()
+        self.lexeme(string='=')
+        string = self.string()
+        return StringVariable(token, name, string)
+
+    def uninitializedVariable(self):
+        self.reserved("var")
+        token = self.current()
+        name = self.identifier()
+        self.lexeme(string='(')
+        size = self.number()
+        self.lexeme(string=')')
+        return UninitializedVariable(token, name, size)
+
+    def routine(self):
+        return self.either(self.function, self.macro)
+        
     def function(self):
         self.reserved("def")
         token = self.current()
@@ -123,32 +191,32 @@ class HplAstParser(HplLexemeParser):
         operand = self.identifier()
         return Instruction(token, command, operand)
     
-    def push(self):  self.__numericInstruction("push")
-    def dup(self):   self.__atomicInstruction("dup")
-    def copy(self):  self.__numericInstruction("copy")
-    def swap(self):  self.__atomicInstruction("swap")
-    def pop(self):   self.__atomicInstruction("pop")
-    def slide(self): self.__numericInstruction("slide")
+    def push(self):  return self.__numericInstruction("push")
+    def dup(self):   return self.__atomicInstruction("dup")
+    def copy(self):  return self.__numericInstruction("copy")
+    def swap(self):  return self.__atomicInstruction("swap")
+    def pop(self):   return self.__atomicInstruction("pop")
+    def slide(self): return self.__numericInstruction("slide")
         
-    def add(self): self.__atomicInstruction("add")
-    def sub(self): self.__atomicInstruction("sub")
-    def mul(self): self.__atomicInstruction("mul")
-    def div(self): self.__atomicInstruction("div")
-    def mod(self): self.__atomicInstruction("mod")
+    def add(self): return self.__atomicInstruction("add")
+    def sub(self): return self.__atomicInstruction("sub")
+    def mul(self): return self.__atomicInstruction("mul")
+    def div(self): return self.__atomicInstruction("div")
+    def mod(self): return self.__atomicInstruction("mod")
     
-    def store(self): self.__atomicInstruction("store")
-    def load(self):  self.__atomicInstruction("load")
+    def store(self): return self.__atomicInstruction("store")
+    def load(self):  return self.__atomicInstruction("load")
     
-    def label(self): self.__labelInstruction("label")
-    def call(self):  self.__labelInstruction("call")
-    def jump(self):  self.__labelInstruction("jump")
-    def jz(self):    self.__labelInstruction("jz")
-    def jn(self):    self.__labelInstruction("jn")
-    def ret(self):   self.__atomicInstruction("ret")
-    def end(self):   self.__atomicInstruction("end")
+    def label(self): return self.__labelInstruction("label")
+    def call(self):  return self.__labelInstruction("call")
+    def jump(self):  return self.__labelInstruction("jump")
+    def jz(self):    return self.__labelInstruction("jz")
+    def jn(self):    return self.__labelInstruction("jn")
+    def ret(self):   return self.__atomicInstruction("ret")
+    def end(self):   return self.__atomicInstruction("end")
     
-    def pc(self): self.__atomicInstruction("pc")
-    def pn(self): self.__atomicInstruction("pn")
-    def rc(self): self.__atomicInstruction("rc")
-    def rn(self): self.__atomicInstruction("rn")
+    def pc(self): return self.__atomicInstruction("pc")
+    def pn(self): return self.__atomicInstruction("pn")
+    def rc(self): return self.__atomicInstruction("rc")
+    def rn(self): return self.__atomicInstruction("rn")
     

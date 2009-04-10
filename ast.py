@@ -2,26 +2,24 @@ from escape import escape
 
 class Program:
 
-    def __init__(self, token, variables, routines):
-        self.token = token
+    def __init__(self, variables, routines):
         self.variables = []
         self.routines = []
         
     def __repr__(self):
-        return ('\n'.join(map(repr, self.variables)) +
+        return ('\n'.join(map(repr, self.variables)) + '\n' +
                 '\n'.join(map(repr, self.routines)))
         
 class Module:
 
-    def __init__(self, token, imports, variables, routines):
-        self.token = token
+    def __init__(self, imports, variables, routines):
         self.imports = imports
         self.variables = variables
         self.routines = routines
         
     def __repr__(self):
-        return ('\n'.join(map(repr, self.imports)) +
-                '\n'.join(map(repr, self.variables)) +
+        return ('\n'.join(map(repr, self.imports)) + '\n' +
+                '\n'.join(map(repr, self.variables)) + '\n' +
                 '\n'.join(map(repr, self.routines)))
         
 class Import:

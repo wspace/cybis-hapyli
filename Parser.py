@@ -1,6 +1,17 @@
 
 class SyntaxError(Exception):
-    pass
+    
+    def __init__(self, tokenIndex, token, message):
+        
+        self.tokenIndex = tokenIndex
+        self.token = token
+        
+        if token == None:
+            fullMessage = message
+        else:
+            fullMessage = str(token) + '\n' + message
+            
+        Exception.__init__(self, fullMessage)
 
 class Parser:
 
@@ -18,13 +29,9 @@ class Parser:
             return None
            
     def fail(self, message):
-        
-        t = self.current()
-        
-        if t == None:
-            raise SyntaxError(message)
-        else:
-            raise SyntaxError(str(t) + '\n' + message)
+        tokenIndex = self.__tokenIndex
+        token = self.current()
+        raise SyntaxError(tokenIndex, token, message)
            
     def many(self, parser):
         
@@ -61,8 +68,7 @@ class Parser:
     def either(self, parser, *parsers):
         
         parsers = [parser]+list(parsers)
-        oldTokenIndex = self.__tokenIndex
-        highestTokenIndexReached = oldTokenIndex
+        lastValidTokenIndex = self.__tokenIndex
         errorToRaise = None
         success = False
         result = None
@@ -73,10 +79,10 @@ class Parser:
                 success = True
                 break
             except SyntaxError, err:
-                if self.__tokenIndex > highestTokenIndexReached:
-                    highestTokenIndexReached = self.__tokenIndex
+                if (errorToRaise == None or 
+                    errorToRaise.tokenIndex < err.tokenIndex):
                     errorToRaise = err
-                self.__tokenIndex = oldTokenIndex
+                self.__tokenIndex = lastValidTokenIndex
                 
         if success:
             return result
