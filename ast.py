@@ -182,7 +182,8 @@ class CallEx(Expression):
         
 class Instruction:
     
-    def __init__(self, command, operand=None):
+    def __init__(self, token, command, operand=None):
+        self.token = token
         self.command = command
         self.operand = operand
 

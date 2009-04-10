@@ -46,6 +46,18 @@ class Parser:
         results.extend(self.many(parser))
         return results
     
+    def optional(self, parser):
+
+        result = None
+        lastValidTokenIndex = self.__tokenIndex
+
+        try:
+            result = parser()
+        except SyntaxError, err:
+            self.__tokenIndex = lastValidTokenIndex
+        
+        return result
+    
     def either(self, parser, *parsers):
         
         parsers = [parser]+list(parsers)
