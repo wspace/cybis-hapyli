@@ -31,3 +31,14 @@ def loadModule(file):
     module = parser.module()
     return module
 
+def writeAssembly(instructions, file):
+    
+    stream = open(file, "w")
+    
+    for ins in instructions:
+        if len(ins) == 1:
+            stream.write(ins[0] + '\n')
+        else:
+            stream.write(ins[0] + ' ' + ins[1] + '\n')
+            
+    stream.close()
