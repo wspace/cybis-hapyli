@@ -2,11 +2,11 @@ import ast
 
 class SemanticError(Exception):
 
-    def __init__(self, node, message):
+    def __init__(self, message, node=None):
     
         self.node = node
     
-        if node == None or node.token == None:
+        if node == None:
             fullMessage = message
         else:
             fullMessage = str(node.token) + '\n' + message
@@ -31,7 +31,7 @@ class HeapTable:
         return self.__table[name]
         
     def __iter__(self):
-        return iter(self.__table)
+        return iter(self.__table.values())
         
     def add(self, name, size, data):
         
@@ -106,7 +106,7 @@ def buildDispatchTable(routines):
         signature = r.name + '~' + str(len(r.parameters))
         
         if signature in dispatch:
-            raise SemanticError(r, "Routine already defined.")
+            raise SemanticError("Routine already defined.", r)
         
         dispatch[signature] = r
         
@@ -119,7 +119,7 @@ def buildHeapTable(variables):
     for v in variables:
         
         if v.name in heap:
-            raise SemanticError(v, "Variable already defined.")
+            raise SemanticError("Variable already defined.", v)
             
         name = v.name
         
@@ -136,7 +136,7 @@ def buildHeapTable(variables):
             data = []
             size = v.size
         else:
-            raise SemanticError(v, "Unknown variable type.")
+            raise SemanticError("Unknown variable type.", v)
             
         heap.add(name, size, data)
         
@@ -155,8 +155,11 @@ def compileProgram(program):
         
     heapCode = compileHeap(heap)
     
-    if "main~0" not in [f.name.lower() for f in functions]:
-        raise SemanticError(program, "Function main() not defined.")
+    loweredFunctionSignatures = [f.name.lower() + '~' + str(len(f.parameters)) 
+                                 for f in functions]
+                                 
+    if "main~0" not in loweredFunctionSignatures:
+        raise SemanticError("Function main() not defined.")
         
     programCode = heapCode
     programCode += [call("main~0"),
@@ -170,11 +173,16 @@ def compileHeap(heap):
     code = []
     
     for (address, size, data) in heap:
+        
         dataPtr = address
+        
         for item in data:
+        
             code += [push(dataPtr),
                      push(item),
                      store()]
+            
+            dataPtr += 1
                      
     code += [push(heap.heapPtr),
              push(0),
@@ -195,13 +203,13 @@ def compileFunction(dispatch, heap, function):
 
     for name in function.parameters:
         if name in stack:
-            raise SemanticError(function, "Duplicate symbols in parameter list.")
+            raise SemanticError("Duplicate symbols in parameter list.", function)
         else:
             stack.add(name)
             
     for (name, value) in function.bindings:
         if name in stack:
-            raise SemanticError(function, "Duplicate symbols in let-form.")
+            raise SemanticError("Duplicate symbols in let-form.", function)
         else:
             stack.add(name)
             code += compileExpression(dispatch, heap, stack, 0, value)
@@ -227,10 +235,10 @@ def compileExpression(dispatch, heap, stack, offset, ex):
         return compileIfEx(dispatch, heap, stack, offset, ex)
     elif isinstance(ex, ast.DoEx):
         return compileDoEx(dispatch, heap, stack, offset, ex)
-    elif isinstance(ex, ast.CallEd):
-        return compileCalLEx(dispatch, heap, stack, offset, ex)
+    elif isinstance(ex, ast.CallEx):
+        return compileCallEx(dispatch, heap, stack, offset, ex)
     else:
-        raise SemanticError(ex, "Unknown expression type.")
+        raise SemanticError("Unknown expression type.", ex)
     
 def compileIntegerLiteralEx(dispatch, heap, stack, offset, ex):
     code = [push(ex.value)]
@@ -245,8 +253,7 @@ def compileStringLiteralEx(dispatch, heap, stack, offset, ex):
     
     (address, size, data) = heap[name]
     
-    code = [push(address),
-            load()]
+    code = [push(address)]
     
     return code
 
@@ -258,10 +265,9 @@ def compileSymbolEx(dispatch, heap, stack, offset, ex):
         code = [copy(address)]
     elif ex.name in heap:
         (address, size, data) = heap[ex.name]
-        code = [push(address),
-                load()]
+        code = [push(address)]
     else:
-        raise SemanticError(ex, "Symbol not defined.")
+        raise SemanticError("Symbol not defined.", ex)
         
     return code
         
@@ -270,19 +276,19 @@ def compileIfEx(dispatch, heap, stack, offset, ex):
     elseLabel = newid()
     endLabel = newid()
     
-    code = compileExpression(ex.condition)
+    code = compileExpression(dispatch, heap, stack, offset, ex.condition)
     code += [jz(elseLabel)]
-    code += compileExpression(ex.trueValue)
+    code += compileExpression(dispatch, heap, stack, offset+1, ex.trueValue)
     code += [jump(endLabel),
              label(elseLabel)]
-    code += compileExpression(ex.falseValue)
+    code += compileExpression(dispatch, heap, stack, offset+2, ex.falseValue)
     code += [label(endLabel)]
     
     return code
         
 def compileDoEx(dispatch, heap, stack, offset, ex):
-    code = compileExpressionList(dispatch, heap, stack, offset, ex.arguments)
-    code += [slide(len(ex.arguments)-1)]
+    code = compileExpressionList(dispatch, heap, stack, offset, ex.expressions)
+    code += [slide(len(ex.expressions)-1)]
     return code
 
 def compileCallEx(dispatch, heap, stack, offset, ex):
@@ -290,14 +296,14 @@ def compileCallEx(dispatch, heap, stack, offset, ex):
     signature = ex.name + '~' + str(len(ex.arguments))
 
     if not signature in dispatch:
-        raise SemanticError(ex, "Routine '" + signature + "' not defined.")
+        raise SemanticError("Routine '" + signature + "' not defined.", ex)
 
     routine = dispatch[signature]
     
     code = compileExpressionList(dispatch, heap, stack, offset, ex.arguments)
     
     if isinstance(routine, ast.Macro):
-        code += routine.body
+        code += map(compileInstruction, routine.body)
     elif isinstance(routine, ast.Function):
         code += [call(signature)]
         

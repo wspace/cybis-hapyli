@@ -18,9 +18,13 @@ def loadProgram(mainFile):
 
         loadedModules.append(nextModule)
         index += 1
-        
-    variables = reduce(lambda x,y: x+y, [m.variables for m in loadedModules])
-    routines = reduce(lambda x,y: x+y, [m.routines for m in loadedModules])
+
+    variables = []
+    routines = []
+    
+    for m in loadedModules:
+        variables.extend(m.variables)
+        routines.extend(m.routines)
 
     return Program(variables, routines)
 
@@ -38,7 +42,7 @@ def writeAssembly(instructions, file):
     for ins in instructions:
         if len(ins) == 1:
             stream.write(ins[0] + '\n')
-        else:
-            stream.write(ins[0] + ' ' + ins[1] + '\n')
+        elif len(ins) == 2:
+            stream.write(ins[0] + ' ' + str(ins[1]) + '\n')
             
     stream.close()

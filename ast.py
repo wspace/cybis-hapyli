@@ -3,8 +3,8 @@ from escape import escape
 class Program:
 
     def __init__(self, variables, routines):
-        self.variables = []
-        self.routines = []
+        self.variables = variables
+        self.routines = routines
         
     def __repr__(self):
         return ('\n'.join(map(repr, self.variables)) + '\n' +
