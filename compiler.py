@@ -323,9 +323,9 @@ def compileExpressionList(dispatch, heap, stack, offset, expressions):
     
 def compileInstruction(ins):
     if ins.operand == None:
-        return (ins.command, '')
+        return (ins.command.lower(), '')
     else:
-        return (ins.command, ins.operand)
+        return (ins.command.lower(), ins.operand)
 
         
 def push(n):  return ("push"  , n)
