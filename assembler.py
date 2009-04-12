@@ -80,7 +80,7 @@ def translateToWhitespace(assembly):
             if operand in labelsDefined:
                 raise AssemblerError("Multiple definitions of label " + operand + " found.")
             else:
-                labelsDefined.add(operand)
+                labelsDefined.append(operand)
                 
     for (command, operand) in assembly:
         
