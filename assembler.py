@@ -76,26 +76,23 @@ def translateToWhitespace(assembly):
     labelsDefined = []
     
     for (command, operand) in assembly:
+        if command == "label":
+            if operand in labelsDefined:
+                raise AssemblerError("Multiple definitions of label " + operand + " found.")
+            else:
+                labelsDefined.add(operand)
+                
+    for (command, operand) in assembly:
         
         opcode = OPCODES[command]
         
         if command in ["push", "copy", "slide"]:
             opcode += numberToWhitespace(operand)
-            
-        elif command == "label":
-        
+        elif command in ["label", "call", "jump", "jz", "jn"]:
             if operand in labelsDefined:
-                raise AssemblerError("Multiple definitions of label " + operand + " found.")
-            
-            labelsDefined.append(operand)
-            opcode += numberToWhitespace(labelsDefined.index(operand))
-
-        elif command in ["call", "jump", "jz", "jn"]:
-            
-            if not operand in labelsDefined:
+                opcode += numberToWhitespace(labelsDefined.index(operand))
+            else:
                 raise AssemblerError("Jump to undefined label " + operand + " found.")
-            
-            opcode += numberToWhitespace(labelsDefined.index(operand))
             
         assembledOpcodes.append(opcode)
     
