@@ -163,6 +163,7 @@ def compileProgram(program):
         
     programCode = heapCode
     programCode += [call("main~0"),
+                    pop()
                     end()]
     programCode += functionCode
     
@@ -278,10 +279,10 @@ def compileIfEx(dispatch, heap, stack, offset, ex):
     
     code = compileExpression(dispatch, heap, stack, offset, ex.condition)
     code += [jz(elseLabel)]
-    code += compileExpression(dispatch, heap, stack, offset+1, ex.trueValue)
+    code += compileExpression(dispatch, heap, stack, offset, ex.trueValue)
     code += [jump(endLabel),
              label(elseLabel)]
-    code += compileExpression(dispatch, heap, stack, offset+2, ex.falseValue)
+    code += compileExpression(dispatch, heap, stack, offset, ex.falseValue)
     code += [label(endLabel)]
     
     return code
