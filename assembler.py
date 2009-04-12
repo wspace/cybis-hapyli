@@ -66,7 +66,7 @@ def numberToWhitespace(value):
     bits = reversed(revbits)
     binstr = ''.join(map(str, bits))
     
-    wsstr = binstr.replace('0', s).replace('1', t)
+    wsstr = binstr.replace('0', s).replace('1', t) + '\n'
         
     return wsstr
     
