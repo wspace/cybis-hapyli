@@ -37,7 +37,7 @@ def loadModule(file):
 
 def writeCompiledAssembly(assembly, file):
     
-    stream = open(file, "wb")
+    stream = open(file, "w")
     
     for (command, operand) in assembly:
         stream.write(command + ' ' + str(operand) + '\n')
