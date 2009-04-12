@@ -163,7 +163,7 @@ def compileProgram(program):
         
     programCode = heapCode
     programCode += [call("main~0"),
-                    pop()
+                    pop(),
                     end()]
     programCode += functionCode
     
@@ -323,36 +323,36 @@ def compileExpressionList(dispatch, heap, stack, offset, expressions):
     
 def compileInstruction(ins):
     if ins.operand == None:
-        return (ins.command, )
+        return (ins.command, '')
     else:
         return (ins.command, ins.operand)
 
         
 def push(n):  return ("push"  , n)
-def dup():    return ("dup"   ,  )
+def dup():    return ("dup"   , '')
 def copy(n):  return ("copy"  , n)
-def swap():   return ("swap"  ,  )
-def pop():    return ("pop"   ,  )
+def swap():   return ("swap"  , '')
+def pop():    return ("pop"   , '')
 def slide(n): return ("slide" , n)
     
-def add(): return ("add" ,  )
-def sub(): return ("sub" ,  )
-def mul(): return ("mul" ,  )
-def div(): return ("div" ,  )
-def mod(): return ("mod" ,  )
+def add(): return ("add" , '')
+def sub(): return ("sub" , '')
+def mul(): return ("mul" , '')
+def div(): return ("div" , '')
+def mod(): return ("mod" , '')
 
-def store(): return ("store" ,  )
-def load():  return ("load"  ,  )
+def store(): return ("store" , '')
+def load():  return ("load"  , '')
 
 def label(x): return ("label" , x)
 def call(x):  return ("call"  , x)
 def jump(x):  return ("jump"  , x)
 def jz(x):    return ("jz"    , x)
 def jn(x):    return ("jn"    , x)
-def ret():    return ("ret"   ,  )
-def end():    return ("end"   ,  )
+def ret():    return ("ret"   , '')
+def end():    return ("end"   , '')
 
-def pc(): return ("pc" ,  )
-def pn(): return ("pn" ,  )
-def rc(): return ("rc" ,  )
-def rn(): return ("rn" ,  )
+def pc(): return ("pc" , '')
+def pn(): return ("pn" , '')
+def rc(): return ("rc" , '')
+def rn(): return ("rn" , '')

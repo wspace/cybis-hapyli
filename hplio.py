@@ -35,14 +35,16 @@ def loadModule(file):
     module = parser.module()
     return module
 
-def writeAssembly(instructions, file):
+def writeCompiledAssembly(assembly, file):
     
-    stream = open(file, "w")
+    stream = open(file, "wb")
     
-    for ins in instructions:
-        if len(ins) == 1:
-            stream.write(ins[0] + '\n')
-        elif len(ins) == 2:
-            stream.write(ins[0] + ' ' + str(ins[1]) + '\n')
-            
+    for (command, operand) in assembly:
+        stream.write(command + ' ' + str(operand) + '\n')
+
+    stream.close()
+
+def writeWhitespace(text, file):
+    stream = open(file, "wb")
+    stream.write(text)
     stream.close()
