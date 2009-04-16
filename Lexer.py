@@ -55,6 +55,8 @@ class Lexer:
                 
     def matchToken(self, line, index=0):
         
+        match = None
+        
         for (kind, regex) in self.patterns():
             match = regex.match(line, index)
             if match != None:

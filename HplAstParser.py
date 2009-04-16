@@ -8,6 +8,8 @@ class HplAstParser(HplLexemeParser):
         
         elements = self.many(self.element)
         
+        self.whiteSpace()
+        
         if self.hasMoreTokens():
             self.element()
         

@@ -1,7 +1,7 @@
 
 class SyntaxError(Exception):
     
-    def __init__(self, tokenIndex, token, message):
+    def __init__(self, message, tokenIndex, token=None):
         
         self.tokenIndex = tokenIndex
         self.token = token
@@ -29,9 +29,14 @@ class Parser:
             return None
            
     def fail(self, message):
+    
         tokenIndex = self.__tokenIndex
-        token = self.current()
-        raise SyntaxError(tokenIndex, token, message)
+        tokens = self.__tokens
+        
+        if 0 <= tokenIndex < len(tokens):
+            raise SyntaxError(message, tokenIndex, tokens[tokenIndex])
+        else:
+            raise SyntaxError(message, tokenIndex)
            
     def many(self, parser):
         
@@ -89,27 +94,24 @@ class Parser:
         else:
             raise errorToRaise
         
-    def next(self):
-        if self.hasMoreTokens():
-            self.__tokenIndex += 1
-            return self.__tokens[self.__tokenIndex]
-        else:
-            self.fail("End of file.")
-        
     def match(self, kind=None, string=None):
     
-        token = self.next()
-        
-        if token == None:
-            self.fail("End of file.")
+        if self.__tokenIndex < len(self.__tokens) - 1:
             
-        if (kind != None and
-            kind != token.kind):
-            self.fail("Expected kind: " + str(kind))
+            self.__tokenIndex += 1
+            token = self.__tokens[self.__tokenIndex]
             
-        if (string != None and
-            string.lower() != token.string.lower()):
-            self.fail("Expected string: " + string)
+            if (kind != None and
+                kind != token.kind):
+                self.fail("Expected kind: " + str(kind))
+            
+            if (string != None and
+                string.lower() != token.string.lower()):
+                self.fail("Expected string: " + string)
         
-        return token
+            return token
+            
+        else:
         
+            self.fail("Unexpected end of file.")
+

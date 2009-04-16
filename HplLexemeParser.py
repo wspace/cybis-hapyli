@@ -51,9 +51,9 @@ class HplLexemeParser(Parser):
             return t.string
 
     def whiteSpace(self):
-        self.match(kind=WHITESPACE)
+        self.many(lambda: self.match(kind=WHITESPACE))
         
     def lexeme(self, kind=None, string=None):
-        self.many(self.whiteSpace)
+        self.whiteSpace()
         return self.match(kind=kind, string=string)
         
