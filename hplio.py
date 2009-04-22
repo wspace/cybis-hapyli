@@ -1,50 +1,53 @@
 from HplLexer import HplLexer
 from HplAstParser import HplAstParser
 from ast import Program
+from os.path import normcase, realpath, dirname, join
 
 def loadProgram(mainFile):
 
-    knownFiles = [mainFile]
+    modules = loadAllModules(mainFile)
+    
+    variables = []
+    functions = []
+    
+    for m in modules:
+        variables.extend(m.variables)
+        functions.extend(m.functions)
+        
+    return Program(variables, functions)
+
+def loadAllModules(fileName):
+    
+    fullPath = normalize(fileName)
+    knownFiles = [fullPath]
     loadedModules = []
     index = 0
     
     while index < len(knownFiles):
-
+        
         nextFile = knownFiles[index]
         nextModule = loadModule(nextFile)
-        importedFiles = [i.file for i in nextModule.imports]
-        newFiles = filter(lambda f: not f in knownFiles, importedFiles)
-        knownFiles.extend(newFiles)
-
         loadedModules.append(nextModule)
-        index += 1
-
-    variables = []
-    routines = []
     
-    for m in loadedModules:
-        variables.extend(m.variables)
-        routines.extend(m.routines)
+        curdir = dirname(nextFile)
+    
+        imports = [i.file for i in nextModule.imports]
+        imports = map(lambda i: join(curdir, i), imports)
+        imports = map(normalize, imports)
+        imports = filter(lambda i: i not in knownFiles, imports)
+        
+        knownFiles.extend(imports)
+        index += 1
+        
+    return loadedModules
 
-    return Program(variables, routines)
-
-def loadModule(file):
+def normalize(path):
+    return normcase(realpath(path))
+    
+def loadModule(fileName):
     lex = HplLexer()
-    tokens = lex.tokenizeFile(file)
+    tokens = lex.tokenizeFile(fileName)
     parser = HplAstParser(tokens)
     module = parser.module()
     return module
 
-def writeCompiledAssembly(assembly, file):
-    
-    stream = open(file, "w")
-    
-    for (command, operand) in assembly:
-        stream.write(command + ' ' + str(operand) + '\n')
-
-    stream.close()
-
-def writeWhitespace(text, file):
-    stream = open(file, "wb")
-    stream.write(text)
-    stream.close()

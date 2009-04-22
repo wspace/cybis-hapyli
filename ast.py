@@ -2,25 +2,25 @@ from escape import escape
 
 class Program:
 
-    def __init__(self, variables, routines):
+    def __init__(self, variables, functions):
         self.variables = variables
-        self.routines = routines
+        self.functions = functions
         
     def __repr__(self):
-        return ('\n'.join(map(repr, self.variables)) + '\n' +
-                '\n'.join(map(repr, self.routines)))
+        return ('\n'.join(map(repr, self.variables)) + '\n\n' +
+                '\n'.join(map(repr, self.functions)))
         
 class Module:
 
-    def __init__(self, imports, variables, routines):
+    def __init__(self, imports, variables, functions):
         self.imports = imports
         self.variables = variables
-        self.routines = routines
+        self.functions = functions
         
     def __repr__(self):
-        return ('\n'.join(map(repr, self.imports)) + '\n' +
-                '\n'.join(map(repr, self.variables)) + '\n' +
-                '\n'.join(map(repr, self.routines)))
+        return ('\n'.join(map(repr, self.imports)) + '\n\n' +
+                '\n'.join(map(repr, self.variables)) + '\n\n' +
+                '\n'.join(map(repr, self.functions)))
         
 class Import:
 
@@ -72,49 +72,50 @@ class UninitializedVariable(Variable):
         self.size = size
 
     def __repr__(self):
-        return 'var ' + self.name + '[' + str(self.size) + ']'
+        return 'var ' + self.name + '(' + str(self.size) + ')'
         
-class Routine:
-    pass
+class Function:
     
-class Function(Routine):
-    
-    def __init__(self, token, name, parameters, bindings, body):
+    def __init__(self, token, inline, name, parameters, bindings, body):
         self.token = token
+        self.inline = inline
         self.name = name
         self.parameters = parameters
-        self.bindings = bindings
+        self.bindings = bindings 
         self.body = body
-
-    def __repr__(self):
         
-        header = 'def ' + self.name + ' (' + ' '.join(self.parameters) + ') = '
-
-        if self.bindings == []:
-            letForm = ''
+    def makeRepr(self, strFuncType, strBody):
+        
+        strFuncType = strFuncType + " "
+        strBody = strBody + "\n"
+        
+        if self.inline:
+            strInline = "inline "
         else:
-            letForm = ('let\n' + 
-                       '\n'.join([name + ' = ' + repr(value) 
-                                 for (name, value) in self.bindings]) + '\n' +
-                       'in ')
+            strInline = ""
+            
+        strSignature = self.name + " (" + ' '.join(self.parameters) + ") = "
         
-        body = repr(self.body)
+        if self.bindings == []:
+            strLetForm = ''
+        else:
+            strLetForm = ("let\n" +
+                          '\n'.join([name + ' = ' + str(value) 
+                                     for (name, value) in self.bindings]) + '\n' +
+                          "in ")
         
-        return header + letForm + body + '\n'
+        return strFuncType + strInline + strSignature + strLetForm + strBody
     
-        
-class Macro(Routine):
-
-    def __init__(self, token, name, parameters, body):
-        self.token = token
-        self.name = name
-        self.parameters = parameters
-        self.body = body
-        
+class HplFunction(Function):
+    
     def __repr__(self):
-        header = 'asm ' + self.name + ' (' + ' '.join(self.parameters) + ') = '
-        body = '(\n' + '\n'.join(map(repr, self.body)) + ')'
-        return header + body + '\n'
+        return self.makeRepr("def", repr(self.body))
+        
+class AsmFunction(Function):
+
+    def __repr__(self):
+        strBody = "(\n" + '\n'.join([str(ins) for ins in self.body]) + "\n)"
+        return self.makeRepr("asm", strBody)
         
 class Expression:
     pass

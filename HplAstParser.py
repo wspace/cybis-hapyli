@@ -15,15 +15,15 @@ class HplAstParser(HplLexemeParser):
         
         imports = filter(lambda e: isinstance(e, Import), elements)
         variables = filter(lambda e: isinstance(e, Variable), elements)
-        routines = filter(lambda e: isinstance(e, Routine), elements)
+        functions = filter(lambda e: isinstance(e, Function), elements)
         
-        return Module(imports, variables, routines)
+        return Module(imports, variables, functions)
 
     def element(self):
         return self.either(
             self.moduleImport,
             self.variable,
-            self.routine)
+            self.function)
 
     def moduleImport(self):
         self.reserved("import")
@@ -73,20 +73,35 @@ class HplAstParser(HplLexemeParser):
         self.lexeme(string=')')
         return UninitializedVariable(token, name, size)
 
-    def routine(self):
-        return self.either(self.function, self.macro)
-        
     def function(self):
-        self.reserved("def")
+        
+        funcType = self.either(lambda: self.reserved("def"),
+                               lambda: self.reserved("asm"))
+                               
         token = self.current()
+        inline = self.optional(lambda: self.reserved("inline")) == "inline"
         name = self.identifier()
-        params = self.parameterList()
+        parameters = self.parameterList()
         self.lexeme(string='=')
+        
         bindings = self.optional(self.letForm)
         if bindings == None:
             bindings = []
-        body = self.expression()
-        return Function(token, name, params, bindings, body)
+        
+        if funcType == "def":
+            body = self.expression()
+            return HplFunction(token, inline, name, parameters, bindings, body)
+        else:
+            self.lexeme(string='(')
+            body = self.many(self.instruction)
+            self.lexeme(string=')')
+            return AsmFunction(token, inline, name, parameters, bindings, body)
+
+    def parameterList(self):
+        self.lexeme(string='(')
+        params = self.many(self.identifier)
+        self.lexeme(string=')')
+        return params
         
     def letForm(self):
         self.reserved("let")
@@ -99,23 +114,6 @@ class HplAstParser(HplLexemeParser):
         self.lexeme(string='=')
         value = self.expression()
         return (name, value)
-    
-    def macro(self):
-        self.reserved("asm")
-        token = self.current()
-        name = self.identifier()
-        params = self.parameterList()
-        self.lexeme(string='=')
-        self.lexeme(string='(')
-        body = self.many(self.instruction)
-        self.lexeme(string=')')
-        return Macro(token, name, params, body)
-        
-    def parameterList(self):
-        self.lexeme(string='(')
-        params = self.many(self.identifier)
-        self.lexeme(string=')')
-        return params
     
     def expression(self):
         return self.either(
