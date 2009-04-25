@@ -2,14 +2,25 @@
 class HeapError(Exception):
     pass
 
+class HeapEntry:
+    
+    def __init__(self, name, address, capacity, data):
+        self.name = name
+        self.address = address
+        self.capacity = capacity
+        self.data = data
+    
 class Heap:
 
     def __init__(self, heapPtr):
         self.__heapTable = {}
-        self.__heapPtr = heapPtr
+        self.heapPtr = heapPtr
         
     def __iter__(self):
         return self.__heapTable.itervalues()
+
+    def __contains__(self, item):
+        return item in self.__heapTable
         
     def __getitem__(self, name):
     
@@ -17,9 +28,6 @@ class Heap:
             raise HeapError("Symbol '" + name + "' not defined.")
     
         return self.__heapTable[name]
-        
-    def getHeapPtr(self):
-        return self.__heapPtr
         
     def reserve(self, name, capacity, data):
         
@@ -32,9 +40,9 @@ class Heap:
         if capacity <= 0:
             raise HeapError("Capacity must be greater than 0.")
         
-        address = self.__heapPtr
-        entry = (address, capacity, data)
+        address = self.heapPtr
+        entry = HeapEntry(name, address, capacity, data)
         
         self.__heapTable[name] = entry
-        self.__heapPtr += capacity
+        self.heapPtr += capacity
 

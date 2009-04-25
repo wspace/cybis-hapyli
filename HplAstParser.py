@@ -51,9 +51,7 @@ class HplAstParser(HplLexemeParser):
         token = self.current()
         name = self.identifier()
         self.lexeme(string='=')
-        self.lexeme(string='(')
-        values = self.many1(self.number)
-        self.lexeme(string=')')
+        values = self.braces(lambda: self.many1(self.number))
         return ArrayVariable(token, name, values)
 
     def stringVariable(self):
@@ -68,41 +66,26 @@ class HplAstParser(HplLexemeParser):
         self.reserved("var")
         token = self.current()
         name = self.identifier()
-        self.lexeme(string='(')
-        size = self.number()
-        self.lexeme(string=')')
+        size = self.brackets(lambda: self.number())
         return UninitializedVariable(token, name, size)
 
     def function(self):
         
-        funcType = self.either(lambda: self.reserved("def"),
-                               lambda: self.reserved("asm"))
-                               
+        self.reserved("def")
         token = self.current()
         inline = self.optional(lambda: self.reserved("inline")) == "inline"
         name = self.identifier()
-        parameters = self.parameterList()
+        parameters = self.parens(lambda: self.many(self.identifier))
         self.lexeme(string='=')
         
         bindings = self.optional(self.letForm)
         if bindings == None:
             bindings = []
         
-        if funcType == "def":
-            body = self.expression()
-            return HplFunction(token, inline, name, parameters, bindings, body)
-        else:
-            self.lexeme(string='(')
-            body = self.many(self.instruction)
-            self.lexeme(string=')')
-            return AsmFunction(token, inline, name, parameters, bindings, body)
-
-    def parameterList(self):
-        self.lexeme(string='(')
-        params = self.many(self.identifier)
-        self.lexeme(string=')')
-        return params
+        body = self.either(self.expression, self.assemblyBlock)
         
+        return Function(token, inline, name, parameters, bindings, body)
+    
     def letForm(self):
         self.reserved("let")
         bindings = self.many(self.binding)
@@ -114,6 +97,13 @@ class HplAstParser(HplLexemeParser):
         self.lexeme(string='=')
         value = self.expression()
         return (name, value)
+    
+    def assemblyBlock(self):
+        self.lexeme(string='{')
+        token = self.current()
+        instructions = self.many(self.instruction)
+        self.lexeme(string='}')
+        return AssemblyBlock(token, instructions)
     
     def expression(self):
         return self.either(

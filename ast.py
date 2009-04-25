@@ -32,47 +32,51 @@ class Import:
         return 'import "' + self.file + '"'
         
 class Variable:
-    pass
+    
+    def __init__(self, token, name, size, data):
+        self.token = token
+        self.name = name
+        self.size = size
+        self.data = data
+        
+    def __repr__(self):
+        raise NotImplementedError()
     
 class IntegerVariable(Variable):
 
     def __init__(self, token, name, value):
-        self.token = token
-        self.name = name
-        self.value = value
+        self.__value = value
+        Variable.__init__(self, token, name, 1, [value])
         
     def __repr__(self):
-        return 'var ' + self.name + ' = ' + str(self.value)
+        return 'var ' + self.name + ' = ' + str(self.__value)
         
 class ArrayVariable(Variable):
     
     def __init__(self, token, name, values):
-        self.token = token
-        self.name = name
-        self.values = values
+        Variable.__init__(self, token, name, len(values), values)
         
     def __repr__(self):
-        return 'var ' + self.name + ' = (' + ' '.join(map(str, self.values)) + ')'
+        return 'var ' + self.name + ' = {' + ' '.join(map(str, self.data)) + '}'
         
 class StringVariable(Variable):
 
     def __init__(self, token, name, string):
-        self.token = token
-        self.name = name
-        self.string = string
+        self.__string = string
+        size = len(string) + 1
+        data = map(ord, string) + [0]
+        Variable.__init__(self, token, name, size, data)
         
     def __repr__(self):
-        return 'var ' + self.name + ' = "' + escape(self.string) + '"'
+        return 'var ' + self.name + ' = "' + escape(self.__string) + '"'
         
 class UninitializedVariable(Variable):
 
     def __init__(self, token, name, size):
-        self.token = token
-        self.name = name
-        self.size = size
+        Variable.__init__(self, token, name, size, [])
 
     def __repr__(self):
-        return 'var ' + self.name + '(' + str(self.size) + ')'
+        return 'var ' + self.name + '[' + str(self.size) + ']'
         
 class Function:
     
@@ -83,39 +87,38 @@ class Function:
         self.parameters = parameters
         self.bindings = bindings 
         self.body = body
-        
-    def makeRepr(self, strFuncType, strBody):
-        
-        strFuncType = strFuncType + " "
-        strBody = strBody + "\n"
-        
+        self.signature = name.lower() + '~' + str(len(parameters))
+                
+    def __repr__(self):
+
         if self.inline:
             strInline = "inline "
         else:
-            strInline = ""
+            strInline = ''
+
+        name = self.name + ' '
+        strParams = '(' + ' '.join(self.parameters) + ')'
             
-        strSignature = self.name + " (" + ' '.join(self.parameters) + ") = "
-        
-        if self.bindings == []:
-            strLetForm = ''
-        else:
+        if self.bindings:
             strLetForm = ("let\n" +
                           '\n'.join([name + ' = ' + str(value) 
                                      for (name, value) in self.bindings]) + '\n' +
                           "in ")
-        
-        return strFuncType + strInline + strSignature + strLetForm + strBody
-    
-class HplFunction(Function):
-    
-    def __repr__(self):
-        return self.makeRepr("def", repr(self.body))
-        
-class AsmFunction(Function):
+        else:
+            strLetForm = ''
 
+        strBody = repr(self.body) + '\n'
+            
+        return "def " + strInline + name + strParams + " = " + strLetForm + strBody
+
+class AssemblyBlock:
+    
+    def __init__(self, token, instructions):
+        self.token = token
+        self.instructions = instructions
+        
     def __repr__(self):
-        strBody = "(\n" + '\n'.join([str(ins) for ins in self.body]) + "\n)"
-        return self.makeRepr("asm", strBody)
+        return '{\n' + '\n'.join(map(repr, self.instructions)) + '\n}'
         
 class Expression:
     pass
@@ -175,6 +178,7 @@ class CallEx(Expression):
         self.token = token
         self.name = name
         self.arguments = arguments
+        self.signature = name.lower() + '~' + str(len(arguments))
 
     def __repr__(self):
         return '(' + self.name + ' ' + ' '.join(map(repr, self.arguments)) + ')'

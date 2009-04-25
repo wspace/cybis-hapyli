@@ -51,3 +51,13 @@ def loadModule(fileName):
     module = parser.module()
     return module
 
+def writeAssembly(fileName, instructions):
+    
+    f = open(fileName, "w")
+    
+    for ins in instructions:
+        command = ins[0]
+        operand = str(ins[1]) if len(ins) == 2 else ''
+        f.write(command + ' ' + operand + '\n')
+        
+    f.close()

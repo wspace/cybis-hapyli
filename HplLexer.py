@@ -6,12 +6,12 @@ class HplLexer(Lexer):
 
     def __init__(self):
 
-        symbolChars = "a-zA-Z!@#$%^&*\-_=+\|:,<.>/?"
+        symbolChars = "a-zA-Z!@#$%^&*~\-_=+\|:,<.>/?"
         literalChar = r"(?:\\[strn0'\"\\]|[^\r\n'\"\\])"
         
         whiteSpacePattern = re.compile(r"(?:\s+|;[^\n]*)+")
         symbolPattern = re.compile('[' + symbolChars + '][0-9' + symbolChars + ']*')
-        operatorPattern = re.compile(r"[()]")
+        operatorPattern = re.compile(r"[\[\]{}()]")
         hexPattern = re.compile(r"-?0[xX][a-fA-F0-9]+")
         intPattern = re.compile(r"-?\d+")
         charPattern = re.compile("'" + literalChar + "'")

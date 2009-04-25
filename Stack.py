@@ -6,6 +6,9 @@ class Stack:
 
     def __init__(self):
         self.__symbols = []
+
+    def __contains__(self, item):
+        return item in self.__symbols
         
     def push(self, name):
         
