@@ -1,6 +1,6 @@
-from hplio import loadProgram, writeAssembly, writeWhitespace
-from compiler import compileProgram
-from whitespace import translateAssembly
+from hwc.hplio import loadProgram, writeAssembly, writeWhitespace
+from hwc.compiler import compileProgram
+from hwc.whitespace import translateAssembly
 from sys import argv
 
 def printUsage():
