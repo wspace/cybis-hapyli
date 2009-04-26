@@ -6,28 +6,35 @@ class HplLexer(Lexer):
 
     def __init__(self):
 
-        symbolChars = "a-zA-Z!@#$%^&*~\-_=+\|:,<.>/?"
-        literalChar = r"(?:\\[strn0'\"\\]|[^\r\n'\"\\])"
+        whiteSpacePattern = r"(?:\s+|;[^\n]*)+"
+        operatorPattern = "[()]"
         
-        whiteSpacePattern = re.compile(r"(?:\s+|;[^\n]*)+")
-        symbolPattern = re.compile('[' + symbolChars + '][0-9' + symbolChars + ']*')
-        operatorPattern = re.compile(r"[()]")
-        hexPattern = re.compile(r"-?0[xX][a-fA-F0-9]+")
-        intPattern = re.compile(r"-?\d+")
-        charPattern = re.compile("'" + literalChar + "'")
-        stringPattern = re.compile('"' + literalChar + '*"')
-        errorPattern = re.compile(r".?")
+        terminate = r"(?=[\s()]|$)"
         
-        self.__patterns = [
+        intPattern    =  "-?\d+" + terminate
+        hexPattern    =  "-?0[xX][0-9a-fA-F]+" + terminate
+        symbolPattern = r"[0-9a-zA-Z~!@#$%^&*\-_=+\|:,<.>/?]+" + terminate
+    
+        literalChar   = r"(?:\\[strn0'\"\\]|[^\r\n'\"\\])"
+        charPattern   = "'" + literalChar + "'" + terminate
+        stringPattern = '"' + literalChar + '*"' + terminate
+    
+        errorPattern  = ".?"
+
+        uncompiledPatterns = [
             (WHITESPACE, whiteSpacePattern),
-            (SYMBOL, symbolPattern),
             (OPERATOR, operatorPattern),
-            (HEX_LITERAL, hexPattern),
             (INT_LITERAL, intPattern),
+            (HEX_LITERAL, hexPattern),
+            (SYMBOL, symbolPattern),
             (CHAR_LITERAL, charPattern),
             (STRING_LITERAL, stringPattern),
-            (ERROR, errorPattern)
-        ]
+            (ERROR, errorPattern) ]
+            
+        compiledPatterns = [(kind, re.compile(pattern))
+                            for (kind, pattern) in uncompiledPatterns]
+        
+        self.__patterns = compiledPatterns
 
     def patterns(self):
         return self.__patterns
