@@ -51,7 +51,9 @@ class HplAstParser(HplLexemeParser):
         token = self.current()
         name = self.identifier()
         self.lexeme(string='=')
-        values = self.braces(lambda: self.many1(self.number))
+        self.lexeme(string='(')
+        values = self.many1(self.number)
+        self.lexeme(string=')')
         return ArrayVariable(token, name, values)
 
     def stringVariable(self):
@@ -66,23 +68,32 @@ class HplAstParser(HplLexemeParser):
         self.reserved("var")
         token = self.current()
         name = self.identifier()
-        size = self.brackets(lambda: self.number())
+        self.lexeme(string='(')
+        size = self.number()
+        self.lexeme(string=')')
         return UninitializedVariable(token, name, size)
 
     def function(self):
         
-        self.reserved("def")
+        functionType = self.either(lambda: self.reserved("def"),
+                                   lambda: self.reserved("asm"))
+                                   
         token = self.current()
         inline = self.optional(lambda: self.reserved("inline")) == "inline"
         name = self.identifier()
-        parameters = self.parens(lambda: self.many(self.identifier))
+        self.lexeme(string='(')
+        parameters = self.many(self.identifier)
+        self.lexeme(string=')')
         self.lexeme(string='=')
         
         bindings = self.optional(self.letForm)
         if bindings == None:
             bindings = []
         
-        body = self.either(self.expression, self.assemblyBlock)
+        if functionType == "def":
+            body = self.expression
+        else:
+            body = self.assemblyBlock
         
         return Function(token, inline, name, parameters, bindings, body)
     
@@ -99,10 +110,10 @@ class HplAstParser(HplLexemeParser):
         return (name, value)
     
     def assemblyBlock(self):
-        self.lexeme(string='{')
+        self.lexeme(string='(')
         token = self.current()
         instructions = self.many(self.instruction)
-        self.lexeme(string='}')
+        self.lexeme(string=')')
         return AssemblyBlock(token, instructions)
     
     def expression(self):

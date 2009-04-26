@@ -1,5 +1,6 @@
-from hplio import loadProgram, writeAssembly
+from hplio import loadProgram, writeAssembly, writeWhitespace
 from compiler import compileProgram
+from whitespace import translateAssembly
 from sys import argv
 
 def printUsage():
@@ -32,6 +33,7 @@ if __name__ == "__main__":
     if asmFlag:
         writeAssembly(outputFile, assembly)
     else:
-        print "Assembler not written yet."
+        whitespace = translateAssembly(assembly)
+        writeWhitespace(outputFile, whitespace)
         
     print "Success!"

@@ -259,36 +259,33 @@ def compileArguments(dispatch, heap, stack, offset, arguments):
 def compileAstInstruction(ins):
     command = ins.command.lower()
     operand = ins.operand
-    if operand == None:
-        return (command, )
-    else:
-        return (command, operand)
+    return (command, operand)
 
 def push(n): return ("push", n)
-def dup(): return ("dup", )
+def dup(): return ("dup", None)
 def copy(n): return ("copy", n)
-def swap(): return ("swap", )
-def pop(): return ("pop", )
+def swap(): return ("swap", None)
+def pop(): return ("pop", None)
 def slide(n): return ("slide", n)
 
-def add(): return ("add", )
-def sub(): return ("sub", )
-def mul(): return ("mul", )
-def div(): return ("div", )
-def mod(): return ("mod", )
+def add(): return ("add", None)
+def sub(): return ("sub", None)
+def mul(): return ("mul", None)
+def div(): return ("div", None)
+def mod(): return ("mod", None)
 
-def store(): return ("store", )
-def load(): return ("load", )
+def store(): return ("store", None)
+def load(): return ("load", None)
 
 def label(x): return ("label", x)
 def call(x): return ("call", x)
 def jump(x): return ("jump", x)
 def jz(x): return ("jz", x)
 def jn(x): return ("jn", x)
-def ret(): return ("ret", )
-def end(): return ("end", )
+def ret(): return ("ret", None)
+def end(): return ("end", None)
 
-def pc(): return ("pc", )
-def pn(): return ("pn", )
-def rc(): return ("rc", )
-def rn(): return ("rn", )
+def pc(): return ("pc", None)
+def pn(): return ("pn", None)
+def rc(): return ("rc", None)
+def rn(): return ("rn", None)

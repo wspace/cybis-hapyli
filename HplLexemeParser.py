@@ -7,22 +7,7 @@ class HplLexemeParser(Parser):
     def __init__(self, tokens):
         Parser.__init__(self, tokens)
         self.__reserved = ["import", "var", "def", "inline", "let", "in", "if", "do"]
-
-    def group(self, opOpen, parser, opClose):
-        self.lexeme(kind=OPERATOR, string=opOpen)
-        result = parser()
-        self.lexeme(kind=OPERATOR, string=opClose)
-        return result
-            
-    def parens(self, parser):
-        return self.group('(', parser, ')')
-
-    def braces(self, parser):
-        return self.group('{', parser, '}')                
     
-    def brackets(self, parser):
-        return self.group('[', parser, ']')
-        
     def string(self):
         t = self.lexeme(kind=STRING_LITERAL)
         escapedString = t.string[1:-1]
