@@ -91,9 +91,9 @@ class HplAstParser(HplLexemeParser):
             bindings = []
         
         if functionType == "def":
-            body = self.expression
+            body = self.expression()
         else:
-            body = self.assemblyBlock
+            body = self.assemblyBlock()
         
         return Function(token, inline, name, parameters, bindings, body)
     

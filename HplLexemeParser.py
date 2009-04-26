@@ -6,7 +6,7 @@ class HplLexemeParser(Parser):
 
     def __init__(self, tokens):
         Parser.__init__(self, tokens)
-        self.__reserved = ["import", "var", "def", "inline", "let", "in", "if", "do"]
+        self.__reserved = ["import", "var", "asm", "def", "inline", "let", "in", "if", "do"]
     
     def string(self):
         t = self.lexeme(kind=STRING_LITERAL)
