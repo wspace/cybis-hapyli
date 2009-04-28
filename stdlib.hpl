@@ -1,5 +1,5 @@
 
-;;;========== ARITHMETIC ==========
+;;; ========== ARITHMETIC ==========
 
 asm inline +  (x y) = ( add )
 asm inline ++ (x)   = ( push 1 add )
@@ -12,10 +12,47 @@ asm inline %  (x y) = ( mod )
 
 
 
+;;; ========== COMPARISON ==========
 
-;;;========== IO ==========
+asm < (x y) = (
 
-var *__STDLIB_INPUT_BUFFER = 0
+    ;; x-y is negative when x < y
+    sub                 ; ( subresult )
+    
+    ;; jump if negative, else return false.
+    jn __STDLIB_<       ; ( )
+    push 0              ; ( false )
+    ret
+
+    ;; return true.
+    label __STDLIB_<    ; ( )
+    push 1              ; ( true )
+    
+    ;; Since this isn't inline,
+    ;; a ret will be added automatically.
+)
+
+def inline > (x y) = (< y x)
+
+def inline <= (x y) = (not (> x y))
+def inline >= (x y) = (not (< x y))
+
+def inline == (x y) = (if (- x y) 0 1)
+def inline != (x y) = (if (- x y) 1 0)
+
+
+
+
+;;; ========== LOGIC ==========
+
+asm inline not (x)   = ( push 1 swap sub )
+asm inline and (x y) = ( mul )
+def inline or  (x y) = (- (+ x y) (* x y))
+
+
+
+
+;;; ========== IO ==========
 
 asm inline print-number (n) = ( dup pn )
 asm inline print-char (c) = ( dup pc )
@@ -30,18 +67,19 @@ in
             *str)
         *str)
 
+        
+
 asm inline read-number (*buffer) = ( dup rn load )
 asm inline read-char (*buffer) = ( dup rc load )
 
+var *__STDLIB_INPUT_BUFFER = 0
 def inline read-number () = (read-number *__STDLIB_INPUT_BUFFER)
 def inline read-char () = (read-char *__STDLIB_INPUT_BUFFER)
-
-
 
     
 
 
-;;;========== HEAP ==========
+;;; ========== HEAP ==========
 
 asm inline ref (*address)         = ( load )
 asm inline ref (*array index) = ( add load )
