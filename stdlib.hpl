@@ -66,16 +66,32 @@ in
             (print-string (++ *str))
             *str)
         *str)
-
         
 
 asm inline read-number (*buffer) = ( dup rn load )
 asm inline read-char (*buffer) = ( dup rc load )
 
+
 var *__STDLIB_INPUT_BUFFER = 0
 def inline read-number () = (read-number *__STDLIB_INPUT_BUFFER)
 def inline read-char () = (read-char *__STDLIB_INPUT_BUFFER)
 
+
+def read-string (*buffer) =
+    (if (== (read-char *buffer) '\n')
+        (set *buffer 0)
+        (++ (read-string (++ *buffer))))
+
+
+def inline read-string () = 
+let 
+    *buffer = (ref 0)
+    nbytes = (++ (read-string *buffer))
+    *unallocated = (+ *buffer nbytes)
+in
+    (do (set *unallocated 0)
+        (set 0 *unallocated)
+        *buffer)
     
 
 
