@@ -77,6 +77,16 @@ def inline read-number () = (read-number *__STDLIB_INPUT_BUFFER)
 def inline read-char () = (read-char *__STDLIB_INPUT_BUFFER)
 
 
+
+def read-string (*buffer max-chars) = 
+    (if (and (!= (read-char *buffer) '\n')
+             max-chars)
+        (++ (read-string 
+                (++ *buffer) 
+                (-- max-chars)))
+        (set *buffer 0))
+
+        
 def read-string (*buffer) =
     (if (== (read-char *buffer) '\n')
         (set *buffer 0)
@@ -85,13 +95,9 @@ def read-string (*buffer) =
 
 def inline read-string () = 
 let 
-    *buffer = (ref 0)
-    nbytes = (++ (read-string *buffer))
-    *unallocated = (+ *buffer nbytes)
+    *unallocated = (ref 0)
 in
-    (do (set *unallocated 0)
-        (set 0 *unallocated)
-        *buffer)
+    (alloc (++ (read-string *unallocated)))
     
 
 
