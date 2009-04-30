@@ -7,7 +7,6 @@ class DispatchEntry:
     def __init__(self, function):
         self.function = function
         self.compiling = False
-        self.call = None
     
 class DispatchTable:
 

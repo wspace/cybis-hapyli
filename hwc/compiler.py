@@ -224,24 +224,19 @@ def compileCallEx(dispatch, heap, stack, offset, ex):
     if not ex.signature in dispatch:
         raise SemanticError(ex.token, "Function '" + ex.signature + "' not defined.")
         
-    argumentListCode = compileArguments(dispatch, heap, stack, offset, ex.arguments)
     dispatchEntry = dispatch[ex.signature]
-    callingCode = dispatchEntry.call
+    functionToCall = dispatchEntry.function
     
-    if callingCode == None:
-    
-        functionToCall = dispatchEntry.function
-        
-        if functionToCall.inline:
-            if dispatchEntry.compiling:
-                raise SemanticError(ex.token, "Function '" + ex.signature + "' cannot be both inline and recursive.")
-            else:
-                callingCode = compileFunction(dispatch, heap, functionToCall)
+    if functionToCall.inline:
+        if dispatchEntry.compiling:
+            raise SemanticError(ex.token, "Function '" + ex.signature + "' cannot be both inline and recursive.")
         else:
-            callingCode = [call(ex.signature)]
-        
-        dispatchEntry.call = callingCode
-        
+            callingCode = compileFunction(dispatch, heap, functionToCall)
+    else:
+        callingCode = [call(ex.signature)]
+
+    argumentListCode = compileArguments(dispatch, heap, stack, offset, ex.arguments)
+    
     return argumentListCode + callingCode
     
 def compileArguments(dispatch, heap, stack, offset, arguments):
