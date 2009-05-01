@@ -34,9 +34,8 @@ class HplLexemeParser(Parser):
         return int(t.string, 16)
         
     def reserved(self, keyword):
-        keyword = keyword.lower()
         t = self.lexeme(kind=SYMBOL)
-        if t.string.lower() != keyword:
+        if t.string != keyword:
             self.fail("Expected: " + keyword)
         elif not keyword in self.__reserved:
             self.fail("Keyword '" + keyword + "' not reserved.")
@@ -45,7 +44,7 @@ class HplLexemeParser(Parser):
         
     def identifier(self):
         t = self.lexeme(kind=SYMBOL)
-        if t.string.lower() in self.__reserved:
+        if t.string in self.__reserved:
             self.fail("Identifiers cannot be reserved keywords.")
         else:
             return t.string

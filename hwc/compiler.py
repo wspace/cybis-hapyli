@@ -36,8 +36,14 @@ def buildProgramHeap(program):
     heap = Heap(1)
     
     for v in program.variables:
+        
         if v.name not in heap:
-            heap.reserve(v.name, v.size, v.data)
+            
+            if v.size > 0:
+                heap.reserve(v.name, v.size, v.data)
+            else:
+                raise SemanticError(v.token, "Variable size must be greater than 0.")
+            
         else:
             raise SemanticError(v.token, "Variable '" + v.name + "' already defined.")
 
@@ -252,7 +258,7 @@ def compileArguments(dispatch, heap, stack, offset, arguments):
     return argumentListCode
     
 def compileAstInstruction(ins):
-    command = ins.command.lower()
+    command = ins.command
     operand = ins.operand
     return (command, operand)
 

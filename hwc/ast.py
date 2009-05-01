@@ -87,7 +87,7 @@ class Function:
         self.parameters = parameters
         self.bindings = bindings 
         self.body = body
-        self.signature = name.lower() + '~' + str(len(parameters))
+        self.signature = name + '~' + str(len(parameters))
                 
     def __repr__(self):
 
@@ -178,7 +178,7 @@ class CallEx(Expression):
         self.token = token
         self.name = name
         self.arguments = arguments
-        self.signature = name.lower() + '~' + str(len(arguments))
+        self.signature = name + '~' + str(len(arguments))
 
     def __repr__(self):
         return '(' + self.name + ' ' + ' '.join(map(repr, self.arguments)) + ')'

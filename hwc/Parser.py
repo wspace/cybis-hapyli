@@ -106,7 +106,7 @@ class Parser:
                 self.fail("Expected kind: " + str(kind))
             
             if (string != None and
-                string.lower() != token.string.lower()):
+                string != token.string):
                 self.fail("Expected string: " + string)
         
             return token
