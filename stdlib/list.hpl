@@ -1,0 +1,15 @@
+import "base.hpl"
+
+var *NIL = 0
+
+def inline pair (x y) = 
+let
+    *pair = (alloc 2)
+in
+    (do (set *pair 0 x)
+        (set *pair 1 y)
+        *pair)
+
+def inline head (*p) = (ref *p 0)
+def inline tail (*p) = (ref *p 1)
+def inline null? (*list) = (== *list *NIL)
