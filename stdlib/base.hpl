@@ -163,3 +163,12 @@ asm inline alloc (size) = (
     ;; Return the address of the newly allocated memory.
 )
 
+
+
+;;; ========== ERROR ==========
+
+asm inline end () = (end)
+
+def inline error (*message) = (do (print-string "\nERROR:\n")
+                                  (print-string *message)
+                                  (end))

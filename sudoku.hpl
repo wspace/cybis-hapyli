@@ -11,19 +11,19 @@ in
         
 def read-rows (currentRow *sudoku) = 
     (if (< currentRow 9)
-        (do (read-columns currentRow 0 *sudoku)
+        (do (read-cells-in-row currentRow 0 *sudoku)
             (read-rows (++ currentRow) *sudoku))
         *sudoku)
         
         
-def read-columns (currentRow currentColumn *sudoku) = 
+def read-cells-in-row (row currentColumn *sudoku) = 
 let
-    cellIndex = (+ (* 9 currentRow) currentColumn)
+    cellIndex = (+ (* 9 row) currentColumn)
     *cell = (+ *sudoku cellIndex)
 in
     (if (< currentColumn 9)
         (do (read-char *cell)
-            (read-columns currentRow (++ currentColumn) *sudoku))
+            (read-cells-in-row row (++ currentColumn) *sudoku))
         (do (read-char)
             *sudoku))
 
@@ -34,19 +34,19 @@ def print-sudoku (*sudoku) =
     
 def print-rows (currentRow *sudoku) = 
     (if (< currentRow 9)
-        (do (print-columns currentRow 0 *sudoku)
+        (do (print-cells-in-row currentRow 0 *sudoku)
             (print-rows (++ currentRow) *sudoku))
         *sudoku)
         
         
-def print-columns (currentRow currentColumn *sudoku) =
+def print-cells-in-row (row currentColumn *sudoku) =
 let
-    cellIndex = (+ (* 9 currentRow) currentColumn)
+    cellIndex = (+ (* 9 row) currentColumn)
     *cell = (+ *sudoku cellIndex)
 in
     (if (< currentColumn 9)
         (do (print-char (ref *cell))
-            (print-columns currentRow (++ currentColumn) *sudoku))
+            (print-cells-in-row row (++ currentColumn) *sudoku))
         (do (print-char '\n')
             *sudoku))
             
@@ -60,95 +60,19 @@ in
     
 def copy-rows (currentRow *source *dest) = 
     (if (< currentRow 9)
-        (do (copy-columns currentRow 0 *source *dest)
+        (do (copy-cells-in-row currentRow 0 *source *dest)
             (copy-rows (++ currentRow) *source *dest))
         *dest)
 
         
-def copy-columns (currentRow currentColumn *source *dest) =
+def copy-cells-in-row (row currentColumn *source *dest) =
 let
-    cellIndex = (+ (* 9 currentRow) currentColumn)
+    cellIndex = (+ (* 9 row) currentColumn)
     *sourceCell = (+ *source cellIndex)
     *destCell = (+ *dest cellIndex)
 in
     (if (< currentColumn 9)
         (do (set *destCell (ref *sourceCell))
-            (copy-columns currentRow (++ currentColumn) *source *dest))
+            (copy-cells-in-row row (++ currentColumn) *source *dest))
         *dest)
 
-
-def compute-indices-to-check (currentCellIndex) = 
-let
-    *indicesToCheck = *NIL
-    row = (/ currentCellIndex 9)
-    column = (% currentCellIndex 9)
-in
-    (add-indices-in-column 0 column
-        (add-indices-in-row row 0 *indicesToCheck))
-
-;;; It's getting late, but see if I can add function
-;;; to compute indices to check in block.
-        
-  
-def add-indices-in-row (row column *indicesToCheck) = 
-let
-    currentIndex = (+ (* 9 row) column)
-in
-    (if (< column 9)
-        (add-indices-in-row 
-            row 
-            (++ column)
-            (pair currentIndex *indicesToCheck))
-        *indicesToCheck)
-
-        
-def add-indices-in-column (row column *indicesToCheck) = 
-let
-    currentIndex = (+ (* 9 row) column)
-in
-    (if (< row 9)
-        (add-indices-in-column
-            (++ row)
-            column
-            (pair currentIndex *indicesToCheck))
-        *indicesToCheck)
-        
-        
-; def add-indices-in-column (currentRow column *indicesToCheck) = 
-; let
-    ; currentIndex = (+ (* 9 currentRow) column)
-; in
-    ; (if (< currentRow 9)
-        ; (add-indices-in-column
-            ; (++ currentRow)
-            ; column
-            ; (pair currentIndex *indicesToCheck))
-        ; *indicesToCheck)
-        
-        
-; def add-indices-in-block (rmin cmin rmax cmax r c *indicesToCheck) = 
-; let
-    ; index = (+ (* 9 r) c)
-; in
-    ; (if (<= r rmax)
-        ; (add-indices-in-block
-            ; rmin cmin rmax cmax (++ r) c (pair index *indicesToCheck))
-        ; (if (<= c cmax)
-            ; (add-indices-in-block
-                ; rmin cmin rmax cmax 0 (++ c) (pair index *indicesToCheck))
-            ; *indicesToCheck))
-            
-def print-list (*list) = 
-    (if (null? *list)
-        0
-        (do (print-number (head *list))
-            (print-char '-')
-            (print-list (tail *list))))
-            
-def main () = 
-let
-    index = (read-number)
-in  
-    (print-list (compute-indices-to-check index))
-
-        
