@@ -169,6 +169,7 @@ asm inline alloc (size) = (
 
 asm inline end () = (end)
 
-def inline error (*message) = (do (print-string "\nERROR:\n")
+def inline error (*message) = (do (print-string "\nERROR: ")
                                   (print-string *message)
+                                  (print-char '\n')
                                   (end))
