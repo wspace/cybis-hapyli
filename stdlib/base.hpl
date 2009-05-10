@@ -49,7 +49,8 @@ asm inline not (x)   = ( push 1 swap sub )
 asm inline and (x y) = ( mul )
 def inline or  (x y) = (- (+ x y) (* x y))
 
-
+def inline and (x y z) = (and x (and y z))
+def inline or (x y z) = (or x (or y z))
 
 
 ;;; ========== IO ==========

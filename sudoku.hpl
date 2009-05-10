@@ -1,5 +1,4 @@
 import "stdlib/base.hpl"
-import "stdlib/list.hpl"
 
 
 def inline get-cell-index (row column) = (+ (* 9 row) column)
@@ -52,153 +51,100 @@ def print-cells-in-row (row currentColumn *sudoku) =
         (do (print-char '\n')
             *sudoku))
 
-
-def copy-sudoku (*source) = 
+            
+def valid-value? (*sudoku emptyCellIndex value) = 
 let
-    *dest = (alloc 81)
-in
-    (copy-rows 0 *source *dest)
-
-    
-def copy-rows (currentRow *source *dest) = 
-    (if (< currentRow 9)
-        (do (copy-cells-in-row currentRow 0 *source *dest)
-            (copy-rows (++ currentRow) *source *dest))
-        *dest)
-
-        
-def copy-cells-in-row (row currentColumn *source *dest) = 
-let
-    cellIndex = (get-cell-index row currentColumn)
-in
-    (if (< currentColumn 9)
-        (do (set *dest cellIndex (ref *source cellIndex))
-            (copy-cells-in-row row (++ currentColumn) *source *dest))
-        *dest)
-
-
-var *ACTIONS = (0  1 1 1  1 1 1  1 1 1)
-
-
-def inline reset-actions () = 
-    (do (set *ACTIONS 0 0)
-        (set *ACTIONS 1 1)
-        (set *ACTIONS 2 1)
-        (set *ACTIONS 3 1)
-        (set *ACTIONS 4 1)
-        (set *ACTIONS 5 1)
-        (set *ACTIONS 6 1)
-        (set *ACTIONS 7 1)
-        (set *ACTIONS 8 1)
-        (set *ACTIONS 9 1))
-        
-
-def clear-actions-from-row (*sudoku row currentColumn) =
-    (if (< currentColumn 9)
-        (do (set *ACTIONS (get-cell-value *sudoku row currentColumn) 0)
-            (clear-actions-from-row *sudoku row (++ currentColumn)))
-        0)
-
-def clear-actions-from-column (*sudoku currentRow column) = 
-    (if (< currentRow 9)
-        (do (set *ACTIONS (get-cell-value *sudoku currentRow column) 0)
-            (clear-actions-from-column *sudoku (++ currentRow) column))
-        0)
-
-def clear-actions-from-block (*sudoku r0 c0 r1 c1) = 
-    (if (< r1 (+ r0 3))
-        (if (< c1 (+ c0 3))
-            (do (set *ACTIONS (get-cell-value *sudoku r1 c1) 0)
-                (clear-actions-from-block *sudoku r0 c0 r1 (++ c1)))
-            (clear-actions-from-block *sudoku r0 c0 (++ r1) c0))
-        0)
-        
-        
-def set-actions (*sudoku cellIndex) = 
-let
-    row = (get-row cellIndex)
-    column = (get-column cellIndex)
+    row = (get-row emptyCellIndex)
+    column = (get-column emptyCellIndex)
     blockRow = (* 3 (/ row 3))
     blockColumn = (* 3 (/ column 3))
 in
-    (do (reset-actions)
-        (clear-actions-from-row *sudoku row 0)
-        (clear-actions-from-column *sudoku 0 column)
-        (clear-actions-from-block *sudoku blockRow blockColumn blockRow blockColumn))
-        
+    (not (or (value-in-row? *sudoku row 0 value)
+             (value-in-column? *sudoku 0 column value)
+             (value-in-block? *sudoku blockRow blockColumn blockRow blockColumn value)))
 
-def find-empty-cell-index (*sudoku index) =
-    (if (< index 81)
-        (if (ref *sudoku index)
-            (find-empty-cell-index *sudoku (++ index))
-            index)
-        -1)
-
-
-def inline apply-action (*sudoku emptyCellIndex action) = 
-let
-    *copy = (copy-sudoku *sudoku)
-in
-    (do (set *copy emptyCellIndex action)
-        *copy)
+             
+def value-in-row? (*sudoku row currentColumn value) = 
+    (if (== currentColumn 9)
+        0
+        (if (== (get-cell-value *sudoku row currentColumn) value)
+            1
+            (value-in-row? *sudoku row (++ currentColumn) value)))
         
         
-def map-actions (*sudoku emptyCellIndex actionIndex) = 
-    (if (<= actionIndex 9)
-        (if (ref *ACTIONS actionIndex)
-            (pair (apply-action *sudoku emptyCellIndex actionIndex)
-                  (map-actions *sudoku emptyCellIndex (++ actionIndex)))
-            (map-actions *sudoku emptyCellIndex (++ actionIndex)))
-        *NIL)
-    
-
-
-def dfs (*fringe) = 
-    (if (null? *fringe)
-        (error "Sudoku is unsolvable!")
-        (dfs-nonempty *fringe))
+def value-in-column? (*sudoku currentRow column value) = 
+    (if (== currentRow 9)
+        0
+        (if (== (get-cell-value *sudoku currentRow column) value)
+            1
+            (value-in-column? *sudoku (++ currentRow) column value)))
         
-def dfs-nonempty (*fringe) = 
-let
-    *sudoku        = (head *fringe)
-    *fringeTail    = (tail *fringe)
-    emptyCellIndex = (find-empty-cell-index *sudoku 0)
-in
-    (do (print-number emptyCellIndex)
-        (print-char '\n')
-        (if (== emptyCellIndex -1)
-            *sudoku
-            (do (set-actions *sudoku emptyCellIndex)
-                (dfs (extend (map-actions *sudoku emptyCellIndex 0)
-                             *fringeTail)))))
+
+def value-in-block? (*sudoku blockRow blockColumn currentRow currentColumn value) = 
+    (if (< currentRow (+ blockRow 3))
+        (if (< currentColumn (+ blockColumn 3))
+            (if (== (get-cell-value *sudoku currentRow currentColumn) value)
+                1
+                (value-in-block? *sudoku 
+                                 blockRow 
+                                 blockColumn 
+                                 currentRow 
+                                 (++ currentColumn) 
+                                 value))
+            (value-in-block? *sudoku 
+                             blockRow 
+                             blockColumn 
+                             (++ currentRow) 
+                             blockColumn 
+                             value))
+        0)
+
+
+def get-empty-cell-index (*sudoku currentIndex) = 
+    (if (== currentIndex 81)
+        -1
+        (if (ref *sudoku currentIndex)
+            (get-empty-cell-index *sudoku (++ currentIndex))
+            currentIndex))
             
+            
+def solve-from-cell (*sudoku emptyCellIndex) = 
+    (if (== -1 emptyCellIndex)
+        1
+        (solve-from-cell-value *sudoku emptyCellIndex 1))
+  
+  
+def solve-from-cell-value (*sudoku emptyCellIndex value) = 
+    (if (== value 10)
+        (set *sudoku emptyCellIndex 0)
+        (if (valid-value? *sudoku emptyCellIndex value)
+            (branch *sudoku emptyCellIndex value)
+            (solve-from-cell-value *sudoku emptyCellIndex (++ value))))
+  
+  
+def branch (*sudoku emptyCellIndex value) =
+    (do (set *sudoku emptyCellIndex value)
+        (if (solve-from-cell *sudoku (get-empty-cell-index *sudoku (++ emptyCellIndex)))
+            1
+            (solve-from-cell-value *sudoku emptyCellIndex (++ value))))
+
+def print-menu () = 
+    (do (print-string "\nSudoku Solver - written in Whitespace!\n\n")
+        (print-string "\tInstructions:\n\n")
+        (print-string "Please enter a 9x9 grid of numbers (0-9).\n")
+        (print-string "Do not put spaces between the numbers.\n")
+        (print-string "\'0\' represents an empty cell:\n\n"))
+
+
 def main () = 
 let
-    *sudoku = *TEST-SUDOKU
-    *fringe = (pair *sudoku *NIL)
+    _0 = (print-menu)
+    *sudoku = (read-sudoku)
+    _1 = (print-string "\nPlease be patient.\nEasy sudokus typically take a minute or two on my Core 2 Duo.\n\n")
+    solved? = (solve-from-cell *sudoku (get-empty-cell-index *sudoku 0))
 in
-    (print-sudoku (dfs *fringe))
-    
-;;; TODO:
-;;; -Language Updates
-;;; if- and if+
-;;; ['var'|'const'] for IntegerVariables (no more magic numbers).
-;;;
-;;; optional let-form before every expression?
-
-        
-
-var *TEST-SUDOKU = (
-9 1 0  0 7 0  4 0 0
-8 0 6  0 1 0  7 0 0
-0 7 0  0 0 0  8 0 3
-
-0 0 5  0 8 4  6 0 1
-0 0 4  6 0 9  5 0 0
-2 0 8  7 5 0  3 0 0
-
-5 0 7  0 0 0  0 3 0
-0 0 9  0 4 0  1 0 7
-0 0 1  0 2 0  0 4 6
-)
+    (do (print-sudoku *sudoku)
+        (if solved?
+            (print-string "\nSuccess!\n")
+            (print-string "\nUnsolvable!\n")))
 
