@@ -1,0 +1,10 @@
+
+                Tutorial for the HaPyLi Programming Language
+                and the HaPyLi -> WhiteSpace Compiler
+
+
+HaPyLi is an esoteric programming language I designed which compiles to 
+WhiteSpace. The name comes from the programming languages that inspired 
+its (admittedly hideous) syntax - Haskell, Python, and Lisp.
+    
+    
