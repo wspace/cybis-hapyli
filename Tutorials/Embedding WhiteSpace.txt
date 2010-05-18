@@ -240,3 +240,18 @@ Functions defined with WhiteSpace Assembler.
         they are not associated with any WhiteSpace labels. 
         
         
+        
+    The Heap Pointer
+    
+        The HaPyLi compiler automatically reserves memory on the heap for global 
+        variables and string literals. Afterward, it writes the address of the remaining,
+        unallocated memory at address '0' on the heap. This is used by the HaPyLi Standard 
+        Library, especially the "alloc" and "read-string" functions, to dynamically allocate
+        more memory at runtime. 
+        
+        The only time you'll ever mess with the heap pointer is when writing a new 
+        memory management system for HaPyLi. So, unless you really know what you're 
+        doing and you have far too much time on your hands, you should never have to
+        worry about the heap pointer, ever. 
+        
+        
