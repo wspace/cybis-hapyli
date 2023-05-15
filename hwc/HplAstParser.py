@@ -1,6 +1,6 @@
-from HplLexemeParser import HplLexemeParser
-from TokenKinds import *
-from ast import *
+from hwc.HplLexemeParser import HplLexemeParser
+from hwc.TokenKinds import *
+from hwc.ast import *
 
 class HplAstParser(HplLexemeParser):
 

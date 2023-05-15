@@ -1,6 +1,6 @@
-from Parser import Parser
-from escape import unescape
-from TokenKinds import *
+from hwc.Parser import Parser
+from hwc.escape import unescape
+from hwc.TokenKinds import *
 
 class HplLexemeParser(Parser):
 

@@ -17,7 +17,7 @@ class Heap:
         self.heapPtr = heapPtr
         
     def __iter__(self):
-        return self.__heapTable.itervalues()
+        return iter(self.__heapTable.values())
 
     def __contains__(self, item):
         return item in self.__heapTable

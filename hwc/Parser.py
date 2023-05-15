@@ -47,7 +47,7 @@ class Parser:
             try:
                 nextResult = parser()
                 results.append(nextResult)
-            except SyntaxError, err:
+            except SyntaxError as err:
                 self.__tokenIndex = lastValidTokenIndex
                 break
                 
@@ -65,7 +65,7 @@ class Parser:
 
         try:
             result = parser()
-        except SyntaxError, err:
+        except SyntaxError as err:
             self.__tokenIndex = lastValidTokenIndex
         
         return result
@@ -83,7 +83,7 @@ class Parser:
                 result = p()
                 success = True
                 break
-            except SyntaxError, err:
+            except SyntaxError as err:
                 if (errorToRaise == None or 
                     errorToRaise.tokenIndex < err.tokenIndex):
                     errorToRaise = err

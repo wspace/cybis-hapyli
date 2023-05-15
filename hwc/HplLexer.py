@@ -1,6 +1,6 @@
 import re
-from Lexer import Lexer
-from TokenKinds import *
+from hwc.Lexer import Lexer
+from hwc.TokenKinds import *
 
 class HplLexer(Lexer):
 

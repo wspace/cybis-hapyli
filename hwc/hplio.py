@@ -1,6 +1,6 @@
-from HplLexer import HplLexer
-from HplAstParser import HplAstParser
-from ast import Program
+from hwc.HplLexer import HplLexer
+from hwc.HplAstParser import HplAstParser
+from hwc.ast import Program
 from os.path import normcase, realpath, dirname, join
 
 def loadProgram(mainFile):
@@ -64,6 +64,6 @@ def writeAssembly(fileName, instructions):
     f.close()
 
 def writeWhitespace(fileName, whitespace):
-    f = open(fileName, "wb")
+    f = open(fileName, "w")
     f.write(whitespace)
     f.close()

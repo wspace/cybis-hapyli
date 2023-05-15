@@ -1,8 +1,8 @@
-from DispatchTable import DispatchTable
-from Heap import Heap
-from Stack import Stack
-from itertools import imap, count
-from ast import *
+from hwc.DispatchTable import DispatchTable
+from hwc.Heap import Heap
+from hwc.Stack import Stack
+from hwc.ast import *
+from itertools import count
 
 class SemanticError(Exception):
     
@@ -16,7 +16,7 @@ class SemanticError(Exception):
         Exception.__init__(self, fullMessage)
         
         
-newid = imap(lambda id: '~' + str(id) + '~', count()).next
+newid = map(lambda id: '~' + str(id) + '~', count())
         
 def compileProgram(program):
     
@@ -158,7 +158,7 @@ def compileFunctionBody(dispatch, heap, stack, function):
         if nLocals > 0:
             bodyCode.append(slide(nLocals))
     elif isinstance(body, AssemblyBlock):
-        bodyCode = map(compileAstInstruction, body.instructions)
+        bodyCode = list(map(compileAstInstruction, body.instructions))
     else:
         assert False, "Unkown function body type."
         
@@ -184,7 +184,7 @@ def compileIntegerLiteralEx(dispatch, heap, stack, offset, ex):
     return [push(ex.value)]
     
 def compileStringLiteralEx(dispatch, heap, stack, offset, ex):
-    var = StringVariable(ex.token, newid(), ex.string)
+    var = StringVariable(ex.token, next(newid), ex.string)
     heap.reserve(var.name, var.size, var.data)
     symbol = SymbolEx(ex.token, var.name)
     return compileSymbolEx(dispatch, heap, stack, offset, symbol)
@@ -208,8 +208,8 @@ def compileIfEx(dispatch, heap, stack, offset, ex):
     trueValueCode = compileExpression(dispatch, heap, stack, offset, ex.trueValue)
     falseValueCode = compileExpression(dispatch, heap, stack, offset, ex.falseValue)
     
-    elseLabel = newid()
-    endLabel = newid()
+    elseLabel = next(newid)
+    endLabel = next(newid)
     
     return (
         conditionCode + 

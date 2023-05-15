@@ -1,4 +1,4 @@
-from Token import Token
+from hwc.Token import Token
 
 class LexicalError(Exception):
     pass

@@ -9,7 +9,7 @@ def printUsage():
     message += "             HaPyLi -> Whitespace Compiler             \n"
     message += "                   By Kevin Gundlach                   \n"               
     message += "Usage: python main.py [-asm] <input file> <output file>\n"
-    print message
+    print(message)
     
     
 if __name__ == "__main__":
@@ -36,4 +36,4 @@ if __name__ == "__main__":
         whitespace = translateAssembly(assembly)
         writeWhitespace(outputFile, whitespace)
         
-    print "Success!"
+    print("Success!")

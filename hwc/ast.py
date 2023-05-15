@@ -1,4 +1,4 @@
-from escape import escape
+from hwc.escape import escape
 
 class Program:
 
@@ -64,7 +64,7 @@ class StringVariable(Variable):
     def __init__(self, token, name, string):
         self.__string = string
         size = len(string) + 1
-        data = map(ord, string) + [0]
+        data = list(map(ord, string)) + [0]
         Variable.__init__(self, token, name, size, data)
         
     def __repr__(self):
