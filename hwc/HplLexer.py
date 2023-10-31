@@ -9,15 +9,14 @@ class HplLexer(Lexer):
         whiteSpacePattern = r"(?:\s+|;[^\n]*)+"
         operatorPattern = "[()]"
         
-        terminate = r"(?=[\s()]|$)"
+        terminate = r"(?=[\s;()]|$)"
         
         intPattern    =  "-?\d+" + terminate
         hexPattern    =  "-?0[xX][0-9a-fA-F]+" + terminate
         symbolPattern = r"[0-9a-zA-Z~!@#$%^&*\-_=+\|:,<.>/?]+" + terminate
     
-        literalChar   = r"(?:\\[strn0'\"\\]|[^\r\n'\"\\])"
-        charPattern   = "'" + literalChar + "'" + terminate
-        stringPattern = '"' + literalChar + '*"' + terminate
+        charPattern   = r"'(?:\\[strn0'\\]|[^\r\n'\\])'" + terminate
+        stringPattern = r'"(?:\\[strn0"\\]|[^\r\n"\\])*"' + terminate
     
         errorPattern  = ".?"
 
